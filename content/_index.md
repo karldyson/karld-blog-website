@@ -20,7 +20,7 @@ Given my Wordpress subscription renews (or (spoiler), not, as it happens) in Feb
 
 So here we are. I hope you like it, and I hope you find it easy on the eye.
 
-I'll spin up a contacts page soon enough, but in the mean time, <a href="mailto:blog@karld.blog?subject=Blog%20Feedback">email me</a>.
+I'll spin up a contacts page soon enough, but in the mean time, <a href="mailto:blog@karld.blog?subject=Blog%20Feedback">email me</a>, or explore the [discussions section of the repository](https://github.com/karldyson/karld-blog-website/discussions).
 
 Thanks,
 Karl
