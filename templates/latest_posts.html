@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{% set posts_section = get_section(path="posts/_index.md") %}
+<h1>Latest Posts</h1>
+<ul>
+{% for post in posts_section.pages %}
+        <li>
+                <a href="{{ post.permalink }}">{{ post.title }}</a>
+                <small>({{ post.date }})</small>
+        </li>
+{% endfor %}
+</ul>
+
+{% endblock %}

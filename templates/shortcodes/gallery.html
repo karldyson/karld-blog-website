@@ -1,0 +1,16 @@
+<div style="width:100%; display:flex; flex-wrap:wrap; justify-content:space-around; overflow:auto;">
+	{% for asset in page.assets -%}
+		{%- if asset is matching("[.](jpg|png)$") -%}
+			{% set image = resize_image(path=asset, width=320, height=320) %}
+			{% set text = load_data(path=asset ~ '.txt', required=false) %}
+			<div style="display:inline-block; margin:8px; border:8px; padding: 8px">
+			<a href="{{ get_url(path=asset) }}" target="_blank">
+				<img src="{{ image.url }}" style="border:0px; margin:0px; padding:0px" />
+			</a>
+			{% if text %}
+				<small> {{ text }} </small>
+			{% endif %}
+			</div>
+		{%- endif %}
+	{%- endfor %}
+</div>

@@ -1,0 +1,44 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+{{ section.content | safe }}
+
+{% set posts_section = get_section(path="posts/_index.md") %}
+
+<div id=latest>
+<h1>Latest Posts</h1>
+<ul>
+{% for post in posts_section.pages %}
+{% if loop.index <= 3 %}
+        <li>
+                <a href="{{ post.permalink }}">{{ post.title }}</a>
+                <small>({{ post.date }})</small>
+        </li>
+{% endif %}
+{% endfor %}
+</ul>
+</div>
+
+<div id=archive>
+<h1>Archive</h1>
+{% for year, posts in posts_section.pages | group_by(attribute="year") %}
+    {% if loop.index == 1 %}<details open style="margin:5px;">{% else %}<details style="margin:5px;">{% endif %}
+    <summary style="font-size: var(--font-size-xx-large); font-family: var(--font-antique); font-weight: lighter; color: var(--fg-color);">{{ year }}</summary>
+    <ul>
+    {% for post in posts %}
+        <li>
+            <a href="{{ post.permalink }}">{{ post.title }}</a>
+            <small>({{ post.date }})</small>
+        </li>
+    {% endfor %}
+    </ul>
+    </details>
+{% endfor %}
+
+</div>
+
+{% endblock %}
+
+
+
