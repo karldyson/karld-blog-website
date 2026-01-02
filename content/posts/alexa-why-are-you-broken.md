@@ -1,5 +1,6 @@
 +++
 title = "Alexa, why are you broken...?"
+description = "My Amazon Echo Dot and Show devices stopped working properly shortly after the advert and malware blocking was introduced"
 date = 2021-03-01
 [extra]
 toc = false

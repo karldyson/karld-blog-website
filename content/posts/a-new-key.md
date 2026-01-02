@@ -1,5 +1,6 @@
 +++
 title = "A New Key..."
+description = "The next step of the RFC5011 keyroll of the root zone KSK"
 date = 2017-03-21
 [extra]
 toc = true

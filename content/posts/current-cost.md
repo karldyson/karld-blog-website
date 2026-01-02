@@ -1,5 +1,6 @@
 +++
 title = "CurrentCost Electricity Monitoring"
+description = "How to do cost effective electricity usage monitoring from CurrentCost devices"
 date = 2012-09-16
 [extra]
 toc = false

@@ -1,5 +1,6 @@
 +++
 title = "Things IPv6 Mostly Breaks, Part 1"
+description = "Things that appear to be broken by IPv6 mostly networks"
 date = 2025-05-08
 [extra]
 toc = false

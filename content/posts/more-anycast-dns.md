@@ -1,5 +1,6 @@
 +++
 title = "More Anycast DNS"
+description = "Anycasting DNS to the internet"
 date = 2020-11-22
 [extra]
 toc = false

@@ -1,5 +1,6 @@
 +++
 title = "IPv6 Privacy Extensions on Linux"
+description = "How to make IPv6 privacy extensions work on Linux"
 date = 2025-04-28
 [extra]
 toc = true

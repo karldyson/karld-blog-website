@@ -1,5 +1,6 @@
 +++
 title = "DNSSEC BIND9 Configuration Summary and Cool Stuff"
+description = "How to DNSSEC sign your DNS zones with BIND9"
 date = 2010-08-20
 [extra]
 toc = false

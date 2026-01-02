@@ -1,5 +1,6 @@
 +++
 title = "IPv6 Privacy Extensions"
+description = "What are IPv6 Privacy Extensions?"
 date = 2011-04-07
 updated = "2017-03-21"
 [extra]

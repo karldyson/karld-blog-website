@@ -1,5 +1,6 @@
 +++
 title = "tcp/53 isn't just for AXFR"
+description = "You're not just opening UDP/53 for DNS, are you...?"
 date = 2010-03-18
 [extra]
 toc = false

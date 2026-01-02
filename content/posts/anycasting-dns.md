@@ -1,5 +1,6 @@
 +++
 title = "Anycasting DNS"
+description = "Anycasting DNS locally within my home network"
 date = 2015-01-18
 [taxonomies]
 tags = ["dns","bgp","anycast","network","junos","juniper","bind9","exabgp"]

@@ -1,5 +1,6 @@
 +++
 title = "Key Validation"
+description = "The last in the series of posts on the root zone RFC5011 KSK keyroll"
 date = 2017-04-24
 [extra]
 toc = true

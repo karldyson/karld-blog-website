@@ -1,5 +1,6 @@
 +++
 title = "Rolling, Rolling, Rolling..."
+description = "The root zone is going to roll it's KSK following the RFC5011 defined process and method"
 date = 2017-03-17
 [extra]
 toc = true

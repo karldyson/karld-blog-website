@@ -1,5 +1,6 @@
 +++
 title = "Bootable USB Sticks"
+description = "How to make bootable USB sticks"
 date = 2018-01-22
 [extra]
 [taxonomies]
