@@ -1,5 +1,6 @@
 +++
 title = "Temperature Monitoring - Part 1"
+description = "Part 1 in a series of replacing my temperature monitoring"
 date = 2025-10-19
 [extra]
 toc = true

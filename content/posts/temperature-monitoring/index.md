@@ -1,5 +1,6 @@
 +++
 title = "Cost Effective Temperature Monitoring"
+description = "Temperature monitoring with DS18B20 1-wire bus sensors and a raspberry pi"
 date = 2012-08-20
 updated = "2017-10-23"
 [extra]

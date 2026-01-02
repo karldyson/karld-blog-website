@@ -1,5 +1,6 @@
 +++
 title = "Live Electricity Usage"
+description = "My set up to have live monitoring and graphing of my electricity usage"
 date = 2012-10-02
 [extra]
 toc = false

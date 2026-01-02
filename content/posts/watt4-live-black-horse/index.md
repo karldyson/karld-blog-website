@@ -1,5 +1,6 @@
 +++
 title = "Watt4 at The Black Horse"
+description = "Pictures of Watt4 playing live at a nearby pub"
 date = 2012-10-01
 [extra]
 toc = false

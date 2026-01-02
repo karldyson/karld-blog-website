@@ -1,5 +1,6 @@
 +++
 title = "Temperature Monitoring - Part 2"
+description = "Implementing the new temperature probes to monitor the heating system"
 date = 2025-11-09
 [extra]
 toc = true

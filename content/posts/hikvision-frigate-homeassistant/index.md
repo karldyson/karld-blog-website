@@ -1,5 +1,6 @@
 +++
 title = "Hikvision, Frigate and Home Assistant"
+description = "Getting the third stream working on the Hikvision cameras and then plumbing that into Frigate"
 date = 2025-12-07
 [extra]
 toc = true

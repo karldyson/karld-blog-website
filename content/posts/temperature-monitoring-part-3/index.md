@@ -1,5 +1,6 @@
 +++
 title = "Temperature Monitoring - Part 3"
+description = "Improving the temperature monitoring with multicast, prometheus and grafana"
 date = 2025-12-16
 [extra]
 toc = true
