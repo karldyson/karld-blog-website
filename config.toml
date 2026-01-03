@@ -51,9 +51,9 @@ index_format = "fuse_json"
 # Put all your custom variables here
 accent_color = "#ff7800"
 accent_color_dark = "#ffa348"
-toc = true
-toc_inline = true
-toc_ordered = true
+toc = false
+toc_inline = false
+toc_ordered = false
 issues_url = "https://github.com/karldyson/karld-blog-website/issues"
 source_url = "https://github.com/karldyson/karld-blog-website"
 show_copy_button = false
