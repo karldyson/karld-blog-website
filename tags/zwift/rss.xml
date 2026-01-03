@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+      <title>Karl&#x27;s Little World - zwift</title>
+      <link>https://karldyson.github.io/karld-blog-website/</link>
+      <description>...just stuff I thought I should write down and that might be useful to others...</description>
+      <generator>Zola</generator>
+      <language>en</language>
+      <atom:link href="https://karldyson.github.io/karld-blog-website/tags/zwift/rss.xml" rel="self" type="application/rss+xml"/>
+      <lastBuildDate>Thu, 08 May 2025 00:00:00 +0000</lastBuildDate>
+      <item>
+          <title>Things IPv6 Mostly Breaks, Part 1</title>
+          <pubDate>Thu, 08 May 2025 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://karldyson.github.io/karld-blog-website/posts/things-ipv6-mostly-breaks-part-1/</link>
+          <guid>https://karldyson.github.io/karld-blog-website/posts/things-ipv6-mostly-breaks-part-1/</guid>
+          <description xml:base="https://karldyson.github.io/karld-blog-website/posts/things-ipv6-mostly-breaks-part-1/">&lt;p&gt;Following my recent article on &lt;a href=&quot;https:&#x2F;&#x2F;karldyson.github.io&#x2F;karld-blog-website&#x2F;posts&#x2F;ipv6-mostly&#x2F;&quot;&gt;ipv6-mostly&lt;&#x2F;a&gt;, last weekend I enabled this on my main network segment as it had all gone well on the guest network.&lt;&#x2F;p&gt;
+&lt;p&gt;I had half expected a bunch of things to stop working in some way…&lt;&#x2F;p&gt;
+&lt;p&gt;Would the Hue app on my phone still talk to the Hue bridge?&lt;&#x2F;p&gt;
+&lt;p&gt;Would the Alexa app on my phone still talk to the devices in my home?&lt;&#x2F;p&gt;
+&lt;p&gt;I assumed a bunch of these things probably all make connections to a cloud service and communicate between themselves via that.&lt;&#x2F;p&gt;
+&lt;p&gt;Nothing appeared to break.&lt;&#x2F;p&gt;
+&lt;p&gt;Until I tried to cycle on Zwift.&lt;&#x2F;p&gt;
+&lt;p&gt;Zwift seems to work fine, however, the companion app doesn’t work as an in-game companion. It talks to Zwift all ok, shows events, activities, etc, just no companion.&lt;&#x2F;p&gt;
+&lt;p&gt;I suspected that the game communicates its local&#x2F;internal IP address to Zwift’s servers, and then the companion app gets the IP from there and makes a local connection direct to the game.&lt;&#x2F;p&gt;
+&lt;p&gt;However, the local IP that the game will find on the interface is an unroutable IPv4 address between &lt;code&gt;192.0.0.2&lt;&#x2F;code&gt; and &lt;code&gt;192.0.0.7&lt;&#x2F;code&gt; from the DS-Lite reserved IP addresses (see &lt;a href=&quot;https:&#x2F;&#x2F;datatracker.ietf.org&#x2F;doc&#x2F;html&#x2F;rfc6333&quot;&gt;RFC6333&lt;&#x2F;a&gt;)&lt;&#x2F;p&gt;
+&lt;p&gt;So, if the game communicates this via Zwift servers, the companion app is going to fail to make a connection to that.&lt;&#x2F;p&gt;
+&lt;p&gt;I manually added a valid IPv4 address to both the Apple TV where the game is running, and my iPhone, and (with a game exit &amp;amp; restart) the companion started working just fine.&lt;&#x2F;p&gt;
+&lt;p&gt;I’ve raise a support ticket with Zwift. I’ll let you know…&lt;&#x2F;p&gt;
+</description>
+      </item>
+    </channel>
+</rss>

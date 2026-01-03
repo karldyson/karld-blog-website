@@ -1,0 +1,4 @@
+User-agent: *
+Disallow:
+Allow: /
+Sitemap: https://karldyson.github.io/karld-blog-website/sitemap.xml

@@ -1,0 +1,140 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+      <title>Karl&#x27;s Little World - rpz</title>
+      <link>https://karldyson.github.io/karld-blog-website/</link>
+      <description>...just stuff I thought I should write down and that might be useful to others...</description>
+      <generator>Zola</generator>
+      <language>en</language>
+      <atom:link href="https://karldyson.github.io/karld-blog-website/tags/rpz/rss.xml" rel="self" type="application/rss+xml"/>
+      <lastBuildDate>Tue, 02 Mar 2021 00:00:00 +0000</lastBuildDate>
+      <item>
+          <title>Blocking Adverts, Tracking &amp; Malware using RPZ</title>
+          <pubDate>Tue, 02 Mar 2021 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://karldyson.github.io/karld-blog-website/posts/blocking-adverts-tracking-malware-rpz/</link>
+          <guid>https://karldyson.github.io/karld-blog-website/posts/blocking-adverts-tracking-malware-rpz/</guid>
+          <description xml:base="https://karldyson.github.io/karld-blog-website/posts/blocking-adverts-tracking-malware-rpz/">&lt;h1 id=&quot;introduction&quot;&gt;Introduction&lt;&#x2F;h1&gt;
+&lt;p&gt;A while back, I decided I wanted to prevent at least some adverts and tracking, but rather than on a device by device basis, I wanted to achieve this for all devices on the network. Those that know me and my recent work will understand that naturally, DNS blocking sprang to mind, as I’m already very familiar with RPZ.&lt;&#x2F;p&gt;
+&lt;p&gt;Originally, I was consuming a bunch of lists with some code, manipulating the entries with some weighting and then outputting an RPZ for my servers to use. However, more recently I found &lt;a href=&quot;https:&#x2F;&#x2F;energized.pro&quot;&gt;Energized Protect&lt;&#x2F;a&gt;, which has a load of different levels of blocking, and they provide the different levels in a variety of formats, helpfully including RPZ. So, I’ve been trialling their lists for a couple of weeks now.&lt;&#x2F;p&gt;
+&lt;p&gt;As with any external feed, you need to be aware of either false positives being added to the list by the curator, as well as things they think should be on the list that you may disagree with. I was &lt;a href=&quot;https:&#x2F;&#x2F;karldyson.github.io&#x2F;karld-blog-website&#x2F;posts&#x2F;alexa-why-are-you-broken&#x2F;&quot;&gt;recently affected&lt;&#x2F;a&gt; by this with my Amazon devices, whereby one or more domains critical to the correct functioning of the Echo devices found their way onto the block list I’m consuming. To be fair, I’m consuming one of the more extreme variants of the list, and so this was something I was aware could happen (although I admit, it didn’t spring straight to the front of my mind when troubleshooting over the weekend!).&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;so-let-s-talk-about-how-rpz-works&quot;&gt;So, let’s talk about how RPZ works.&lt;&#x2F;h1&gt;
+&lt;p&gt;RPZ is a feature within some DNS servers that allows you to modify the responses given to clients depending on a number of different criteria. BIND from Internet Systems Consortium (ISC) was pretty much first to have RPZ, but others have varying levels of support for the main functionality. The BIND implementation allows you to define a policy that can consist of a number of layers. Within the policy you can override the entire contents of a layer, and within each layer you can have permit and deny actions based on a number of triggers. For this use case, we are interested in two of the triggers:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;the name being looked up&lt;&#x2F;li&gt;
+&lt;li&gt;the IP of the client making the request&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;The file we download from Energized Protect will form the main blocking layer, and we’ll override the entire layer at the policy level with &lt;code&gt;NXDOMAIN&lt;&#x2F;code&gt;. Arguably we could send queries to a web server with a block page, but not all things on the requesting end of this are browsers, and we can get logging from the BIND servers if we want to know what was blocked for a given client for the purposes of troubleshooting. Of course, we will want to be able to override these entries incase something gets on the list that we don’t want to be affected by (see above).&lt;&#x2F;p&gt;
+&lt;p&gt;RPZ layers are DNS zone file format (see &lt;a href=&quot;https:&#x2F;&#x2F;tools.ietf.org&#x2F;html&#x2F;rfc1035&quot;&gt;RFC1035 section 5&lt;&#x2F;a&gt; if you’re particularly interested in DNS master zone format, or for RPZ you can read the &lt;a href=&quot;https:&#x2F;&#x2F;www.ietf.org&#x2F;archive&#x2F;id&#x2F;draft-vixie-dnsop-dns-rpz-00.txt&quot;&gt;RFC draft&lt;&#x2F;a&gt; (it’s not made it to a full RFC yet…)).&lt;&#x2F;p&gt;
+&lt;p&gt;Because they’re DNS zone files, they can be transferred to other DNS servers using the normal notify and transfer mechanisms.&lt;&#x2F;p&gt;
+&lt;p&gt;On my network here, there’s a central authoritative server, and then a pair of recursive servers that deal with actual client requests. I’ll get around to writing about the anycast set up of those in another article.&lt;&#x2F;p&gt;
+&lt;p&gt;For the purposes of this article, the authoritative master is on &lt;code&gt;192.168.1.53&lt;&#x2F;code&gt;, and the two slaves that are actually dealing with the client recursion are on &lt;code&gt;192.168.1.51&lt;&#x2F;code&gt; and &lt;code&gt;192.168.1.52&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;central-authoritative-server&quot;&gt;Central Authoritative Server&lt;&#x2F;h1&gt;
+&lt;p&gt;We’ll start with the central authoritative server. There are two bits to this, periodically fetching the RPZ, and serving it to the slave servers.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;the-code&quot;&gt;The Code&lt;&#x2F;h2&gt;
+&lt;p&gt;All of the scripts I talk about below, can be found in the &lt;a href=&quot;https:&#x2F;&#x2F;github.com&#x2F;karldyson&#x2F;rpz-blocking&quot;&gt;code repository&lt;&#x2F;a&gt;. The code is fairly straight foward, but of course, drop me a line if you have questions.&lt;&#x2F;p&gt;
+&lt;p&gt;Energized Protect update their feeds every 6 hours, and so there’s no need to poll them any more often than that. Further, the &lt;code&gt;updateblockrpz&lt;&#x2F;code&gt; script keeps an unchanged copy of the downloaded file so that &lt;code&gt;wget&lt;&#x2F;code&gt; can do timestamping and only download the file if it has actually changed on the server.&lt;&#x2F;p&gt;
+&lt;p&gt;There are two further scripts, both of which allow you to manipulate an override layer in the policy.&lt;&#x2F;p&gt;
+&lt;p&gt;The first, &lt;code&gt;rpz-override&lt;&#x2F;code&gt;, allows you to add and remove domains from the override, either to add things you want to block, or allow things blocked in the block layer.&lt;&#x2F;p&gt;
+&lt;p&gt;The second script, &lt;code&gt;rpz-override-client&lt;&#x2F;code&gt;, allows you to base the action on the client IP instead of on the queried name.&lt;&#x2F;p&gt;
+&lt;p&gt;Both of these are written in Perl, and more specifically are built on the &lt;code&gt;Net::DNS&lt;&#x2F;code&gt; module to send the changes into the server via a dynamic update.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;the-config&quot;&gt;The Config&lt;&#x2F;h2&gt;
+&lt;p&gt;Next, let’s look at how we configure the server. A base understanding of BIND configuration is assumed.&lt;&#x2F;p&gt;
+&lt;p&gt;First, we’ll need to config it to master the two zones, permit dynamic updates on the override zone, and permit slaves to transfer them. Depending on your distro, the location of your &lt;code&gt;named.conf&lt;&#x2F;code&gt; may vary, and also whether it’s a single file or split out with includes. I’ll just include generic config here to try and cover as many bases as possible.&lt;&#x2F;p&gt;
+&lt;pre data-linenos class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;table&gt;&lt;tbody&gt;&lt;tr&gt;&lt;td&gt;1&lt;&#x2F;td&gt;&lt;td&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;zone &amp;quot;block&amp;quot; {
+&lt;&#x2F;span&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;&lt;tr&gt;&lt;td&gt;2&lt;&#x2F;td&gt;&lt;td&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	type master;
+&lt;&#x2F;span&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;&lt;tr&gt;&lt;td&gt;3&lt;&#x2F;td&gt;&lt;td&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	file &amp;quot;rpz&#x2F;block&amp;quot;;
+&lt;&#x2F;span&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;&lt;tr&gt;&lt;td&gt;&lt;mark&gt;4&lt;&#x2F;mark&gt;&lt;&#x2F;td&gt;&lt;td&gt;&lt;mark&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	notify explicit;
+&lt;&#x2F;span&gt;&lt;&#x2F;mark&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;&lt;tr&gt;&lt;td&gt;&lt;mark&gt;5&lt;&#x2F;mark&gt;&lt;&#x2F;td&gt;&lt;td&gt;&lt;mark&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	also-notify {
+&lt;&#x2F;span&gt;&lt;&#x2F;mark&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;&lt;tr&gt;&lt;td&gt;&lt;mark&gt;6&lt;&#x2F;mark&gt;&lt;&#x2F;td&gt;&lt;td&gt;&lt;mark&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;		192.168.1.51;
+&lt;&#x2F;span&gt;&lt;&#x2F;mark&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;&lt;tr&gt;&lt;td&gt;&lt;mark&gt;7&lt;&#x2F;mark&gt;&lt;&#x2F;td&gt;&lt;td&gt;&lt;mark&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;		192.168.1.52;
+&lt;&#x2F;span&gt;&lt;&#x2F;mark&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;&lt;tr&gt;&lt;td&gt;8&lt;&#x2F;td&gt;&lt;td&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	};
+&lt;&#x2F;span&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;&lt;tr&gt;&lt;td&gt;9&lt;&#x2F;td&gt;&lt;td&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;};
+&lt;&#x2F;span&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;&lt;tr&gt;&lt;td&gt;10&lt;&#x2F;td&gt;&lt;td&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;
+&lt;&#x2F;span&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;&lt;tr&gt;&lt;td&gt;11&lt;&#x2F;td&gt;&lt;td&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;zone &amp;quot;override&amp;quot; {
+&lt;&#x2F;span&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;&lt;tr&gt;&lt;td&gt;12&lt;&#x2F;td&gt;&lt;td&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	type master;
+&lt;&#x2F;span&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;&lt;tr&gt;&lt;td&gt;13&lt;&#x2F;td&gt;&lt;td&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	file &amp;quot;rpz&#x2F;override&amp;quot;;
+&lt;&#x2F;span&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;&lt;tr&gt;&lt;td&gt;&lt;mark&gt;14&lt;&#x2F;mark&gt;&lt;&#x2F;td&gt;&lt;td&gt;&lt;mark&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	notify explicit;
+&lt;&#x2F;span&gt;&lt;&#x2F;mark&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;&lt;tr&gt;&lt;td&gt;&lt;mark&gt;15&lt;&#x2F;mark&gt;&lt;&#x2F;td&gt;&lt;td&gt;&lt;mark&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	also-notify {
+&lt;&#x2F;span&gt;&lt;&#x2F;mark&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;&lt;tr&gt;&lt;td&gt;&lt;mark&gt;16&lt;&#x2F;mark&gt;&lt;&#x2F;td&gt;&lt;td&gt;&lt;mark&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;		192.168.1.51;
+&lt;&#x2F;span&gt;&lt;&#x2F;mark&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;&lt;tr&gt;&lt;td&gt;&lt;mark&gt;17&lt;&#x2F;mark&gt;&lt;&#x2F;td&gt;&lt;td&gt;&lt;mark&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;		192.168.1.52;
+&lt;&#x2F;span&gt;&lt;&#x2F;mark&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;&lt;tr&gt;&lt;td&gt;18&lt;&#x2F;td&gt;&lt;td&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	};
+&lt;&#x2F;span&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;&lt;tr&gt;&lt;td&gt;&lt;mark&gt;19&lt;&#x2F;mark&gt;&lt;&#x2F;td&gt;&lt;td&gt;&lt;mark&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	allow-update { 127.0.0.1; ::1; };
+&lt;&#x2F;span&gt;&lt;&#x2F;mark&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;&lt;tr&gt;&lt;td&gt;20&lt;&#x2F;td&gt;&lt;td&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;};
+&lt;&#x2F;span&gt;&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;&lt;&#x2F;tbody&gt;&lt;&#x2F;table&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Normal rules apply here; config like &lt;code&gt;also-notify&lt;&#x2F;code&gt; can inherit from the main options section, or can be overridden per zone like we have done here (line 4 to force just the specific entries listed in lines 5-7).&lt;&#x2F;p&gt;
+&lt;p&gt;We do the same again with the override zone (lines 14 &amp;amp; 15-17), but here we also add the &lt;code&gt;allow-update&lt;&#x2F;code&gt; (line 19), in order to permit the maintenance scripts to work.&lt;&#x2F;p&gt;
+&lt;p&gt;If your main &lt;code&gt;options&lt;&#x2F;code&gt; section has &lt;code&gt;allow-update&lt;&#x2F;code&gt; specified, you will need to specify &lt;code&gt;allow-update { none; };&lt;&#x2F;code&gt; in addition for the block zone, to prevent BIND from keeping journals for the zone. If you need other config that will lead to journals, such as &lt;code&gt;ixfr-from-differences&lt;&#x2F;code&gt;, for example, then the &lt;code&gt;updateblockrpz&lt;&#x2F;code&gt; script may need a tweak to freeze and thaw the block zone instead of just reloading the update.&lt;&#x2F;p&gt;
+&lt;p&gt;I run the &lt;code&gt;updateblockrpz&lt;&#x2F;code&gt; script from cron at a randomly selected minute after the hour, every 6 hours and lazily capture the output to a tmp file for troubleshooting purposes. Yes, I should likely update this to log properly!&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;17 *&#x2F;6 * * * &#x2F;usr&#x2F;local&#x2F;bin&#x2F;updateblockrpz &amp;gt;&#x2F;tmp&#x2F;updateblockrpz.tmp
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h1 id=&quot;slave-servers&quot;&gt;Slave Servers&lt;&#x2F;h1&gt;
+&lt;p&gt;Having got the RPZ zones set up on the master, we can turn our attention to the slaves that are actually handling the queries from the clients on the network.&lt;&#x2F;p&gt;
+&lt;p&gt;First, we’ll slave the RPZ zones from the master:&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;masters rpzmasters { 192.168.1.53; };
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;zone &amp;quot;block&amp;quot; {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    type slave;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    file &amp;quot;rpz&#x2F;block&amp;quot;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    masters { rpzmasters; };
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;};
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;zone &amp;quot;override&amp;quot; {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    type slave;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    file &amp;quot;rpz&#x2F;override&amp;quot;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    masters { rpzmasters; };
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;};
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;…and next, we’ll define the policy that’ll apply to the clients:&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;options {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;...
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	response-policy {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;		zone &amp;quot;override&amp;quot; policy given;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;		zone &amp;quot;block&amp;quot; policy nxdomain;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	}
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;		break-dnssec yes
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;		qname-wait-recurse no
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;		max-policy-ttl 900
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;...
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;};
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;As we mentioned before, we’re overriding the block layer at the policy level, forcing anything in that layer to result in a &lt;mark&gt;NXDOMAIN&lt;&#x2F;mark&gt; response. The override layer is left as given so that the actions in the layer carry. The policy is evaluated top to bottom, with the first action encountered causing an exit from policy, hence the override layer, which could be whitelisting something that’s in the block layer, is listed first.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;rpz-entries&quot;&gt;RPZ Entries&lt;&#x2F;h1&gt;
+&lt;p&gt;Lastly, we’ll just briefly cover different types of record that you might want to put in the override layer; the scripts will help you mostly with this, but for those that are interested, here’s a little more detail.&lt;&#x2F;p&gt;
+&lt;p&gt;Broadly, as we discussed earlier, we’re interested in two main triggers; the name being looked up, and the client making the query.&lt;&#x2F;p&gt;
+&lt;p&gt;Entries that affect the domain name being looked up broadly look like this:&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;some.domain.name.override. 300 IN CNAME &amp;lt;action&amp;gt;.
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Where &lt;mark&gt;&amp;lt;action&amp;gt;&lt;&#x2F;mark&gt; is one of the following:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;rpz-passthru&lt;&#x2F;code&gt; (whitelist)&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;rpz-drop&lt;&#x2F;code&gt; (drop the query - quite unfriendly, will cause the client to wait for a timeout)&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;.&lt;&#x2F;code&gt; (a literal dot, which will cause a NXDOMAIN response)&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;It’s also possible to do something like this, if you want to override to a block page or honeypot, for example:&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;some.domain.name.override. 300 IN A 192.168.0.1
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;…and of course, any of those can be prefixed with *. to cause the action to apply to everything within the bailiwick of some.domain.name.&lt;&#x2F;p&gt;
+&lt;p&gt;Entries that affect the client look a little different. Firstly, they’re reversed, a bit like &lt;code&gt;in-addr.arpa&lt;&#x2F;code&gt; zones but they’re prefixed by an additional item specifying the CIDR notation. So, if you want to (using the actions from above) whitelist all queries from single IP &lt;code&gt;192.168.58.3&lt;&#x2F;code&gt;, you’d do:&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;32.3.58.168.192.rpz-client-ip.override. 300 IN CNAME rpz-passthru.
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;However, if you wanted to block the upper &#x2F;25, you’d do this (note use of the subnet IP, you need to specify the correct subnet boundary IP):&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;25.128.58.168.192.rpz-client-ip.override. 300 IN CNAME rpz-passthru.
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h1 id=&quot;other-trigger-types&quot;&gt;Other Trigger Types&lt;&#x2F;h1&gt;
+&lt;p&gt;We’ve not talked about the other triggers, but briefly, you can also trigger actions based on:&lt;&#x2F;p&gt;
+&lt;ol&gt;
+&lt;li&gt;&lt;code&gt;rpz-ip&lt;&#x2F;code&gt; - the IP addresses that are returned in the answer to a query.&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;rpz-nsdname&lt;&#x2F;code&gt; - the domain name of the nameservers that are authoritative for the domain in the query.&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;rpz-nsip&lt;&#x2F;code&gt; - the IP addresses of the nameservers that are authoritative for the domain in the query (ie: what the names in (2) resolve to).&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;p&gt;Type 1 can lead to data exfiltration, which, if you’re blocking a domain because you want to prevent exfiltration, defeats the object.&lt;&#x2F;p&gt;
+&lt;p&gt;If you put type 1 or type 3 in a layer, then if BIND reaches that layer as it works through the policy, it will do the recursion to the authority for the zone in order to work out if the trigger is a match.&lt;&#x2F;p&gt;
+&lt;p&gt;If you’re worried about data exfiltration, you &lt;strong&gt;MUST&lt;&#x2F;strong&gt; put the domains you’re blocking for that purpose in a RPZ layer above the first layer that includes type 1 or type 3 entries, then BIND will execute your configured action without any recursion.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;but-what-about-dnssec&quot;&gt;…but what about DNSSEC&lt;&#x2F;h1&gt;
+&lt;p&gt;If you’ve read all that, and you’re thinking to yourself “hey, but surely returning modified answers will break DNSSEC” then you’re right. Your client machine stub-resolvers will trust your DNS resolver, and so won’t notice, but if you’re pointing a validating resolver at this setup, you’ll need to make sure you keep the &lt;code&gt;break-dnssec yes;&lt;&#x2F;code&gt; option I included above. Possibly counter-intuitively, this causes your RPZ server to lie to the downstream validating resolver.&lt;&#x2F;p&gt;
+&lt;p&gt;If &lt;code&gt;baddomain.com&lt;&#x2F;code&gt; is DNSSEC signed, and is on your block list, the downstream validating resolver will usually be sending queries with &lt;mark&gt;CD&lt;&#x2F;mark&gt; set instead of trusting your validation, expecting your server to send all the required DS, DNSKEY, etc. with &lt;code&gt;break-dnssec yes;&lt;&#x2F;code&gt; the RPZ server will lie; it’ll pretend &lt;code&gt;baddomain.com&lt;&#x2F;code&gt; isn’t signed and will strip all DNSSEC data in responses to the downstream resolver(s).&lt;&#x2F;p&gt;
+&lt;p&gt;It’s important to note that this has an edge case. Let’s imagine you have &lt;code&gt;gooddomain.com&lt;&#x2F;code&gt;, which is signed, and is not being modified by your policy at all. Now let’s imagine you have &lt;code&gt;badthing.gooddomain.com&lt;&#x2F;code&gt; which is not at a zone split boundary, and is just a regular non-delegation entry in &lt;code&gt;gooddomain.com&lt;&#x2F;code&gt;. If you add &lt;code&gt;badthing.gooddomain.com&lt;&#x2F;code&gt; specifically to your RPZ for modification, the server can’t deal with lying about just that entry, and the downstream validator will spot the lie, returning &lt;mark&gt;SERVFAIL&lt;&#x2F;mark&gt; to its downstream client(s).&lt;&#x2F;p&gt;
+</description>
+      </item>
+    </channel>
+</rss>

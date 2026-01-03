@@ -1,0 +1,67 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title>Karl&#x27;s Little World - robin</title>
+    <subtitle>...just stuff I thought I should write down and that might be useful to others...</subtitle>
+    <link rel="self" type="application/atom+xml" href="https://karldyson.github.io/karld-blog-website/tags/robin/atom.xml"/>
+    <link rel="alternate" type="text/html" href="https://karldyson.github.io/karld-blog-website/"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2025-04-25T00:00:00+00:00</updated>
+    <id>https://karldyson.github.io/karld-blog-website/tags/robin/atom.xml</id>
+    <entry xml:lang="en">
+        <title>Robin</title>
+        <published>2025-04-25T00:00:00+00:00</published>
+        <updated>2025-04-25T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://karldyson.github.io/karld-blog-website/posts/robin/"/>
+        <id>https://karldyson.github.io/karld-blog-website/posts/robin/</id>
+        
+        <content type="html" xml:base="https://karldyson.github.io/karld-blog-website/posts/robin/">&lt;div style=&quot;width:100%; display:flex; flex-wrap:wrap; justify-content:space-around; overflow:auto;&quot;&gt;
+	
+			
+			&lt;div style=&quot;display:inline-block; margin:8px; border:8px; padding: 8px&quot;&gt;
+			&lt;a href=&quot;https:&#x2F;&#x2F;karldyson.github.io&#x2F;karld-blog-website&#x2F;posts&#x2F;robin&#x2F;robin_bush-top-close-up_square_small.jpg&quot; target=&quot;_blank&quot;&gt;
+				&lt;img src=&quot;https:&amp;#x2F;&amp;#x2F;karldyson.github.io&amp;#x2F;karld-blog-website&amp;#x2F;processed_images&amp;#x2F;robin_bush-top-close-up_square_small.6b7dd76f10298125.jpg&quot; style=&quot;border:0px; margin:0px; padding:0px&quot; &#x2F;&gt;
+			&lt;&#x2F;a&gt;
+			
+			&lt;&#x2F;div&gt;
+			
+			&lt;div style=&quot;display:inline-block; margin:8px; border:8px; padding: 8px&quot;&gt;
+			&lt;a href=&quot;https:&#x2F;&#x2F;karldyson.github.io&#x2F;karld-blog-website&#x2F;posts&#x2F;robin&#x2F;robin_front_square.jpg&quot; target=&quot;_blank&quot;&gt;
+				&lt;img src=&quot;https:&amp;#x2F;&amp;#x2F;karldyson.github.io&amp;#x2F;karld-blog-website&amp;#x2F;processed_images&amp;#x2F;robin_front_square.fc03aab3e7e588de.jpg&quot; style=&quot;border:0px; margin:0px; padding:0px&quot; &#x2F;&gt;
+			&lt;&#x2F;a&gt;
+			
+			&lt;&#x2F;div&gt;
+			
+			&lt;div style=&quot;display:inline-block; margin:8px; border:8px; padding: 8px&quot;&gt;
+			&lt;a href=&quot;https:&#x2F;&#x2F;karldyson.github.io&#x2F;karld-blog-website&#x2F;posts&#x2F;robin&#x2F;robin_in-bush_square_small.jpg&quot; target=&quot;_blank&quot;&gt;
+				&lt;img src=&quot;https:&amp;#x2F;&amp;#x2F;karldyson.github.io&amp;#x2F;karld-blog-website&amp;#x2F;processed_images&amp;#x2F;robin_in-bush_square_small.2ae04b019e8f863d.jpg&quot; style=&quot;border:0px; margin:0px; padding:0px&quot; &#x2F;&gt;
+			&lt;&#x2F;a&gt;
+			
+			&lt;&#x2F;div&gt;
+			
+			&lt;div style=&quot;display:inline-block; margin:8px; border:8px; padding: 8px&quot;&gt;
+			&lt;a href=&quot;https:&#x2F;&#x2F;karldyson.github.io&#x2F;karld-blog-website&#x2F;posts&#x2F;robin&#x2F;robin_in-tree_square_small.jpg&quot; target=&quot;_blank&quot;&gt;
+				&lt;img src=&quot;https:&amp;#x2F;&amp;#x2F;karldyson.github.io&amp;#x2F;karld-blog-website&amp;#x2F;processed_images&amp;#x2F;robin_in-tree_square_small.eaa5b6403f5a4919.jpg&quot; style=&quot;border:0px; margin:0px; padding:0px&quot; &#x2F;&gt;
+			&lt;&#x2F;a&gt;
+			
+			&lt;&#x2F;div&gt;
+			
+			&lt;div style=&quot;display:inline-block; margin:8px; border:8px; padding: 8px&quot;&gt;
+			&lt;a href=&quot;https:&#x2F;&#x2F;karldyson.github.io&#x2F;karld-blog-website&#x2F;posts&#x2F;robin&#x2F;robin_on-feeder_square_large.jpg&quot; target=&quot;_blank&quot;&gt;
+				&lt;img src=&quot;https:&amp;#x2F;&amp;#x2F;karldyson.github.io&amp;#x2F;karld-blog-website&amp;#x2F;processed_images&amp;#x2F;robin_on-feeder_square_large.14aaf011404722a6.jpg&quot; style=&quot;border:0px; margin:0px; padding:0px&quot; &#x2F;&gt;
+			&lt;&#x2F;a&gt;
+			
+			&lt;&#x2F;div&gt;
+&lt;&#x2F;div&gt;
+</content>
+        
+    </entry>
+</feed>

@@ -1,0 +1,97 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title>Karl&#x27;s Little World - NAT</title>
+    <subtitle>...just stuff I thought I should write down and that might be useful to others...</subtitle>
+    <link rel="self" type="application/atom+xml" href="https://karldyson.github.io/karld-blog-website/tags/nat/atom.xml"/>
+    <link rel="alternate" type="text/html" href="https://karldyson.github.io/karld-blog-website/"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2025-04-25T00:00:00+00:00</updated>
+    <id>https://karldyson.github.io/karld-blog-website/tags/nat/atom.xml</id>
+    <entry xml:lang="en">
+        <title>Nintendo Switch NAT Types</title>
+        <published>2025-04-25T00:00:00+00:00</published>
+        <updated>2025-04-25T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://karldyson.github.io/karld-blog-website/posts/nintendo-switch-nat-types/"/>
+        <id>https://karldyson.github.io/karld-blog-website/posts/nintendo-switch-nat-types/</id>
+        
+        <content type="html" xml:base="https://karldyson.github.io/karld-blog-website/posts/nintendo-switch-nat-types/">&lt;p&gt;Like lots of people, my daughter has a Nintendo Switch.&lt;&#x2F;p&gt;
+&lt;p&gt;A few weeks ago she came to me because a game she was trying to play online was complaining about the NAT type.
+So we had a look in the network connection test and found it was reporting &lt;b&gt;NAT Type D&lt;&#x2F;b&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;I have a Juniper SRX here (of course) and the Switch was just using the general outbound source NAT that looks a little like this (actual IPs redacted, naturally).&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;Junos&quot; class=&quot;language-Junos z-code&quot;&gt;&lt;code class=&quot;language-Junos&quot; data-lang=&quot;Junos&quot;&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;&amp;gt; &lt;span class=&quot;z-keyword z-control z-junos&quot;&gt;show&lt;&#x2F;span&gt; configuration security nat source rule-set&lt;span class=&quot;z-variable z-language z-junos&quot;&gt; general&lt;&#x2F;span&gt; rule&lt;span class=&quot;z-variable z-language z-junos&quot;&gt; general&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;match {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;    source-address &lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;192.0.2.0&#x2F;24&lt;&#x2F;span&gt;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;}
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;then {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;    source-nat {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;       &lt;span class=&quot;z-entity z-name z-function z-junos&quot;&gt; pool&lt;&#x2F;span&gt; {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;            &lt;span class=&quot;z-variable z-language z-junos&quot;&gt;general&lt;&#x2F;span&gt;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;        }
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;    }
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;The pool is just a very basic pool with a simple address specified.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;Junos&quot; class=&quot;language-Junos z-code&quot;&gt;&lt;code class=&quot;language-Junos&quot; data-lang=&quot;Junos&quot;&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;&amp;gt; &lt;span class=&quot;z-keyword z-control z-junos&quot;&gt;show&lt;&#x2F;span&gt; configuration security nat source pool&lt;span class=&quot;z-variable z-language z-junos&quot;&gt; general&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;address {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;    &lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;198.51.100.100&#x2F;32&lt;&#x2F;span&gt;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Some googling later and I find that this seems to be because port translation is in use.&lt;&#x2F;p&gt;
+&lt;p&gt;Seems the Nintendo does not like that.&lt;&#x2F;p&gt;
+&lt;p&gt;The Switch already has a static DHCP lease so it always gets the same IP.&lt;&#x2F;p&gt;
+&lt;p&gt;I’m fortunate to have a &#x2F;29 from my ISP and I had an IP spare, so I created a new pool for the Nintendo with port translation disabled.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;Junos&quot; class=&quot;language-Junos z-code&quot;&gt;&lt;code class=&quot;language-Junos&quot; data-lang=&quot;Junos&quot;&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;&amp;gt; &lt;span class=&quot;z-keyword z-control z-junos&quot;&gt;show&lt;&#x2F;span&gt; configuration security nat source pool&lt;span class=&quot;z-variable z-language z-junos&quot;&gt; nintendo-switch&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;address {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;    &lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;198.51.100.101&#x2F;32&lt;&#x2F;span&gt;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;}
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;port {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;    no-translation;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Good news. This gets the NAT Type up to &lt;strong&gt;NAT Type B&lt;&#x2F;strong&gt; and the game started working.&lt;&#x2F;p&gt;
+&lt;p&gt;But this got me to thinking. What was needed for &lt;strong&gt;NAT Type A&lt;&#x2F;strong&gt;…?&lt;&#x2F;p&gt;
+&lt;p&gt;Given nothing else was using the public IP, I altered the NAT configuration to a static NAT.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;Junos&quot; class=&quot;language-Junos z-code&quot;&gt;&lt;code class=&quot;language-Junos&quot; data-lang=&quot;Junos&quot;&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;&amp;gt; &lt;span class=&quot;z-keyword z-control z-junos&quot;&gt;show&lt;&#x2F;span&gt; configuration security nat static rule-set&lt;span class=&quot;z-variable z-language z-junos&quot;&gt; general&lt;&#x2F;span&gt; rule&lt;span class=&quot;z-variable z-language z-junos&quot;&gt; nintendo-switch&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;match {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;    destination-address &lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;198.51.100.101&#x2F;32&lt;&#x2F;span&gt;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;}
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;then {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;    static-nat {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;        prefix-name {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;            nintendo-switch;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;        }
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;    }
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;This, however, &lt;em&gt;still&lt;&#x2F;em&gt; results in &lt;strong&gt;NAT Type&lt;&#x2F;strong&gt; &lt;em&gt;&lt;strong&gt;B&lt;&#x2F;strong&gt;&lt;&#x2F;em&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;There seemed to be two obvious options remaining.&lt;&#x2F;p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;Type A is actually “No NAT at all”&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;Type A is “there’s effectively no firewalling“&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;p&gt;Testing option 2 was quicker and simpler than 1.&lt;&#x2F;p&gt;
+&lt;p&gt;As much as I detest &lt;code&gt;any-any&lt;&#x2F;code&gt; type policies, the outbound policy all along for the Switch was a basic “allow the Switch outbound to the internet” policy.&lt;&#x2F;p&gt;
+&lt;p&gt;So I added an &lt;code&gt;any-any&lt;&#x2F;code&gt; inbound policy permitting anything inbound to the Switch.&lt;&#x2F;p&gt;
+&lt;p&gt;Bingo! &lt;strong&gt;NAT Type A&lt;&#x2F;strong&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;So, that’s horrible.&lt;&#x2F;p&gt;
+&lt;p&gt;Given &lt;strong&gt;NAT Type B&lt;&#x2F;strong&gt; is good enough for 99 point something percent of things, that &lt;code&gt;any-any&lt;&#x2F;code&gt; inbound policy was disabled as soon as the test completed.&lt;&#x2F;p&gt;
+&lt;p&gt;I will have to have a little faff with the network so that I can drop the Switch into a VLAN where I can give it a public IP directly so there’s actually no NAT at all, and see what it says then.&lt;&#x2F;p&gt;
+&lt;p&gt;I just thought this might be useful to someone.&lt;&#x2F;p&gt;
+&lt;p&gt;Thanks for reading.&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+</feed>

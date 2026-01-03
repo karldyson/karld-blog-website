@@ -1,0 +1,468 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title>Karl&#x27;s Little World - slaac</title>
+    <subtitle>...just stuff I thought I should write down and that might be useful to others...</subtitle>
+    <link rel="self" type="application/atom+xml" href="https://karldyson.github.io/karld-blog-website/tags/slaac/atom.xml"/>
+    <link rel="alternate" type="text/html" href="https://karldyson.github.io/karld-blog-website/"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2025-05-08T00:00:00+00:00</updated>
+    <id>https://karldyson.github.io/karld-blog-website/tags/slaac/atom.xml</id>
+    <entry xml:lang="en">
+        <title>Things IPv6 Mostly Breaks, Part 1</title>
+        <published>2025-05-08T00:00:00+00:00</published>
+        <updated>2025-05-08T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://karldyson.github.io/karld-blog-website/posts/things-ipv6-mostly-breaks-part-1/"/>
+        <id>https://karldyson.github.io/karld-blog-website/posts/things-ipv6-mostly-breaks-part-1/</id>
+        
+        <content type="html" xml:base="https://karldyson.github.io/karld-blog-website/posts/things-ipv6-mostly-breaks-part-1/">&lt;p&gt;Following my recent article on &lt;a href=&quot;https:&#x2F;&#x2F;karldyson.github.io&#x2F;karld-blog-website&#x2F;posts&#x2F;ipv6-mostly&#x2F;&quot;&gt;ipv6-mostly&lt;&#x2F;a&gt;, last weekend I enabled this on my main network segment as it had all gone well on the guest network.&lt;&#x2F;p&gt;
+&lt;p&gt;I had half expected a bunch of things to stop working in some way…&lt;&#x2F;p&gt;
+&lt;p&gt;Would the Hue app on my phone still talk to the Hue bridge?&lt;&#x2F;p&gt;
+&lt;p&gt;Would the Alexa app on my phone still talk to the devices in my home?&lt;&#x2F;p&gt;
+&lt;p&gt;I assumed a bunch of these things probably all make connections to a cloud service and communicate between themselves via that.&lt;&#x2F;p&gt;
+&lt;p&gt;Nothing appeared to break.&lt;&#x2F;p&gt;
+&lt;p&gt;Until I tried to cycle on Zwift.&lt;&#x2F;p&gt;
+&lt;p&gt;Zwift seems to work fine, however, the companion app doesn’t work as an in-game companion. It talks to Zwift all ok, shows events, activities, etc, just no companion.&lt;&#x2F;p&gt;
+&lt;p&gt;I suspected that the game communicates its local&#x2F;internal IP address to Zwift’s servers, and then the companion app gets the IP from there and makes a local connection direct to the game.&lt;&#x2F;p&gt;
+&lt;p&gt;However, the local IP that the game will find on the interface is an unroutable IPv4 address between &lt;code&gt;192.0.0.2&lt;&#x2F;code&gt; and &lt;code&gt;192.0.0.7&lt;&#x2F;code&gt; from the DS-Lite reserved IP addresses (see &lt;a href=&quot;https:&#x2F;&#x2F;datatracker.ietf.org&#x2F;doc&#x2F;html&#x2F;rfc6333&quot;&gt;RFC6333&lt;&#x2F;a&gt;)&lt;&#x2F;p&gt;
+&lt;p&gt;So, if the game communicates this via Zwift servers, the companion app is going to fail to make a connection to that.&lt;&#x2F;p&gt;
+&lt;p&gt;I manually added a valid IPv4 address to both the Apple TV where the game is running, and my iPhone, and (with a game exit &amp;amp; restart) the companion started working just fine.&lt;&#x2F;p&gt;
+&lt;p&gt;I’ve raise a support ticket with Zwift. I’ll let you know…&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>IPv6 Privacy Extensions on Linux</title>
+        <published>2025-04-28T00:00:00+00:00</published>
+        <updated>2025-04-28T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://karldyson.github.io/karld-blog-website/posts/ipv6-privacy-extensions-linux/"/>
+        <id>https://karldyson.github.io/karld-blog-website/posts/ipv6-privacy-extensions-linux/</id>
+        
+        <content type="html" xml:base="https://karldyson.github.io/karld-blog-website/posts/ipv6-privacy-extensions-linux/">&lt;h1 id=&quot;introduction&quot;&gt;Introduction&lt;&#x2F;h1&gt;
+&lt;p&gt;This is definitely one of the blog posts written to remind me how to do something.&lt;&#x2F;p&gt;
+&lt;p&gt;I’m sure I knew this, but returning to it on a new box caused me frustration that Googling did not help with. Maybe my google-fu is broken?&lt;&#x2F;p&gt;
+&lt;p&gt;It was only after quite a bit of googling and reading things that I spotted something in a comment that reminded me of the thing I was missing.&lt;&#x2F;p&gt;
+&lt;p&gt;So, I’m writing this so that it will remind me in future, and may help others.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;scenario&quot;&gt;Scenario&lt;&#x2F;h1&gt;
+&lt;p&gt;I had built a new Raspberry Pi 5 as a pi-hole server.&lt;&#x2F;p&gt;
+&lt;p&gt;Of course, in order to ssh to it and browse to the admin UI, it has fixed IP addresses.&lt;&#x2F;p&gt;
+&lt;p&gt;Actual DNS service is done by advertising service IP(s) into the router’s routing table so I can do some ECMP and resilience.&lt;&#x2F;p&gt;
+&lt;p&gt;I wanted it to recurse to the internet from privacy extensions IPs so that the recursive source IPs change over time.&lt;&#x2F;p&gt;
+&lt;p&gt;I knew I needed to stick a &lt;code&gt;2&lt;&#x2F;code&gt; in &lt;code&gt;&#x2F;proc&#x2F;sys&#x2F;net&#x2F;ipv6&#x2F;conf&#x2F;eth0&#x2F;use_tempaddr&lt;&#x2F;code&gt; and that things worked best if you also stick &lt;code&gt;1&lt;&#x2F;code&gt; in &lt;code&gt;&#x2F;proc&#x2F;sys&#x2F;net&#x2F;ipv6&#x2F;conf&#x2F;eth0&#x2F;accept_ra&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;But, nothing. No dynamic IPv6 addresses.&lt;&#x2F;p&gt;
+&lt;p&gt;Bother.&lt;&#x2F;p&gt;
+&lt;p&gt;I knew there was something else I was pretty sure there’s a third file I need to do something with, but could I remember which one it was?&lt;&#x2F;p&gt;
+&lt;p&gt;Nope.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;solution&quot;&gt;Solution&lt;&#x2F;h1&gt;
+&lt;p&gt;So, I’ll cut to the chase.&lt;&#x2F;p&gt;
+&lt;p&gt;For automatic IP configuration, there also needs to be a &lt;code&gt;1&lt;&#x2F;code&gt; in &lt;code&gt;&#x2F;proc&#x2F;sys&#x2F;net&#x2F;ipv6&#x2F;conf&#x2F;eth0&#x2F;autoconf&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;configuration&quot;&gt;Configuration&lt;&#x2F;h1&gt;
+&lt;p&gt;This is what I have done to fix this such that it’s reboot and upgrade safe. By all means leave me a comment below if I’ve missed something obvious here!&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;sysctl&lt;&#x2F;code&gt; can be persuaded to make these changes as follows:&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;$ cat &#x2F;etc&#x2F;sysctl.d&#x2F;99-tempaddr.conf
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;# accept router-advertisements
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;net.ipv6.conf.all.accept_ra=1
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;net.ipv6.conf.default.accept_ra=1
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;# use temporary addresses (privacy extensions)
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;net.ipv6.conf.all.use_tempaddr=2
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;net.ipv6.conf.default.use_tempaddr=2
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;# auto configure addresses
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;net.ipv6.conf.all.autoconf=1
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;net.ipv6.conf.default.autoconf=1
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;I don’t use NetworkManager for my &lt;code&gt;eth0&lt;&#x2F;code&gt; IP addresses, as I’m more familiar with &lt;code&gt;&#x2F;etc&#x2F;network&#x2F;interfaces&lt;&#x2F;code&gt; so this is my static config and a poke to make sure that &lt;code&gt;eth0&lt;&#x2F;code&gt; picks up the settings too.&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;$ cat &#x2F;etc&#x2F;network&#x2F;interfaces.d&#x2F;ethernet
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;auto eth0
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;allow-hotplug eth0
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;iface eth0 inet static
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	address 10.1.1.53
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	netmask 255.255.255.0
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	gateway 10.1.1.1
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;iface eth0 inet6 static
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	address 2001:db8::53
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	netmask 64
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	gateway 2001:db8::1
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;        post-up &#x2F;usr&#x2F;sbin&#x2F;sysctl net.ipv6.conf.eth0.accept_ra=1
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;        post-up &#x2F;usr&#x2F;sbin&#x2F;sysctl net.ipv6.conf.eth0.autoconf=1
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;        post-up &#x2F;usr&#x2F;sbin&#x2F;sysctl net.ipv6.conf.eth0.use_tempaddr=2
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h1 id=&quot;fixed&quot;&gt;Fixed!&lt;&#x2F;h1&gt;
+&lt;p&gt;…and this is what the output looks like now that that is working…&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;$ ip add sh eth0
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;2: eth0: &amp;lt;BROADCAST,MULTICAST,UP,LOWER_UP&amp;gt; mtu 1500 qdisc pfifo_fast state UP group default qlen 1000
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    link&#x2F;ether 2c:cf:67:8a:03:50 brd ff:ff:ff:ff:ff:ff
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    inet 10.1.1.53&#x2F;24 brd 10.1.1.255 scope global eth0
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;       valid_lft forever preferred_lft forever
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    inet6 2001:db8::a863:8e:293f:1ec7&#x2F;64 scope global temporary dynamic
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;       valid_lft 525174sec preferred_lft 6706sec
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    inet6 2001:db8::2ecf:67ff:fe8a:350&#x2F;64 scope global dynamic mngtmpaddr
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;       valid_lft 2591996sec preferred_lft 604796sec
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    inet6 2001:db8::53&#x2F;64 scope global
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;       valid_lft forever preferred_lft forever
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    inet6 fe80::2ecf:67ff:fe8a:350&#x2F;64 scope link
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;       valid_lft forever preferred_lft forever
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;..and remote things on the internet see the correct source for my outbound connections…&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;$ dig i.p.c.je txt @i.p.c.je +short
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;&amp;quot;query received from source IP: 2001:db8::a863:8e:293f:1ec7&amp;quot;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;&amp;quot;query received from source port: 47948&amp;quot;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;&amp;quot;query received over: udp&amp;quot;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;&amp;quot;edns size: 1232&amp;quot;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;$ curl -6 c.je&#x2F;ip
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;Your IP is 2001:db8::a863:8e:293f:1ec7
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;You&amp;#39;re using curl&#x2F;7.88.1
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h1 id=&quot;technicalities&quot;&gt;Technicalities&lt;&#x2F;h1&gt;
+&lt;h2 id=&quot;use-tempaddr&quot;&gt;use_tempaddr&lt;&#x2F;h2&gt;
+&lt;p&gt;Values in this file have the following meanings:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;&amp;lt;= 0&lt;&#x2F;code&gt; : Privacy Extensions is disabled&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;== 1&lt;&#x2F;code&gt; : Privacy Extensions is enabled, but public addresses are preferred over temporary addresses&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;&amp;gt; 1&lt;&#x2F;code&gt; : Privacy Extensions is enabled, but temporary addresses are preferred over public addresses&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;Note that in some very brief and not very scientific testing, if autoconf is enabled and use_tempaddr is set to 1, the addresses that seem to be preferred are the autoconf addresses even if you have a static configured. I don’t think this surprises me, but worth noting.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;accept-ra&quot;&gt;accept_ra&lt;&#x2F;h2&gt;
+&lt;p&gt;Simply put, &lt;code&gt;0&lt;&#x2F;code&gt; to disable, &lt;code&gt;1&lt;&#x2F;code&gt; to enable the acceptance of router advertisements.&lt;&#x2F;p&gt;
+&lt;p&gt;Note that if you disable this, you will need to specify the gateway statically if you have not already.&lt;&#x2F;p&gt;
+&lt;p&gt;If this is disabled but &lt;code&gt;use_tempaddr&lt;&#x2F;code&gt; is non zero, temporary addresses can still be created but just not using prefix information from the router advertisements.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;autoconf&quot;&gt;autoconf&lt;&#x2F;h2&gt;
+&lt;p&gt;As above; &lt;code&gt;0&lt;&#x2F;code&gt; to disable, &lt;code&gt;1&lt;&#x2F;code&gt; to enable the automatic configuration of IP addresses.&lt;&#x2F;p&gt;
+&lt;p&gt;If &lt;code&gt;accept_ra&lt;&#x2F;code&gt; is set to &lt;code&gt;1&lt;&#x2F;code&gt; and this is set to &lt;code&gt;0&lt;&#x2F;code&gt;, router advertisements will be used for the gateway but not for IP address configuration locally.&lt;&#x2F;p&gt;
+&lt;p&gt;If this is enabled and &lt;code&gt;use_tempaddr&lt;&#x2F;code&gt; is not, stateless (SLAAC) addresses will be added to the interface but no privacy extensions addresses.&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+    <entry xml:lang="en">
+        <title>IPv6, Mostly...</title>
+        <published>2025-04-26T00:00:00+00:00</published>
+        <updated>2025-04-26T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://karldyson.github.io/karld-blog-website/posts/ipv6-mostly/"/>
+        <id>https://karldyson.github.io/karld-blog-website/posts/ipv6-mostly/</id>
+        
+        <content type="html" xml:base="https://karldyson.github.io/karld-blog-website/posts/ipv6-mostly/">&lt;blockquote class=&quot;warning&quot;&gt;
+	&lt;p class=&quot;alert-title&quot;&gt;
+		&lt;i class=&quot;icon&quot;&gt;&lt;&#x2F;i&gt;Warning&lt;&#x2F;p&gt;
+	&lt;p&gt;&lt;mark&gt;TL;DR&lt;&#x2F;mark&gt;: This article turned out longer than expected, so if you just want the tl;dr, &lt;a href=&quot;#configuration-time&quot;&gt;skip to that bit&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+
+&lt;&#x2F;blockquote&gt;
+&lt;h1 id=&quot;introduction&quot;&gt;Introduction&lt;&#x2F;h1&gt;
+&lt;p&gt;IPv4 has run out. This is not news.&lt;&#x2F;p&gt;
+&lt;p&gt;IPv6 uptake, however, has been slow given it was first created in 1995.&lt;&#x2F;p&gt;
+&lt;p&gt;It can be intimidating, if you’re not a network expert, and there are still things that are perceived to just work best if you’re doing IPv4.&lt;&#x2F;p&gt;
+&lt;p&gt;Examples include getting information about the network to a client, other than the client’s IP address.&lt;&#x2F;p&gt;
+&lt;p&gt;With IPv4, when you connect to a network, by default in most cases, your device asks the network for an IP address using a protocol called Dynamic Host Configuration Protocol (DHCP).&lt;&#x2F;p&gt;
+&lt;p&gt;But the protocol doesn’t just give your device an IP address; it can also let your device know about a bunch of other things on the network. Most commonly the DNS servers that will resolve names for you, but also things like NTP servers, proxy discovery, and more can be conveyed to the device using this mechanism.&lt;&#x2F;p&gt;
+&lt;p&gt;So IPv6 just needs a version of DHCP then? Well sure, and it does, cunningly named DHCPv6. But for lots of reasons, on a client network, you probably don’t want to be handing out IPv6 addresses with DHCPv6. IPv6 is more modern and can sort out its addresses statelessly and automatically using something called SLAAC. You probably want IPv6 to be stateless for a variety of reasons. Privacy is high up the list.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;privacy&quot;&gt;Privacy?&lt;&#x2F;h1&gt;
+&lt;p&gt;Let’s take a step back.&lt;&#x2F;p&gt;
+&lt;p&gt;With IPv4, the address space is tiny compared to the number of devices on the modern internet. Think about your phones, iPads, laptops, home assistant, smart speakers; the list goes on. Even a modest modern home has dozens of devices needing an IP address.&lt;&#x2F;p&gt;
+&lt;p&gt;So, there are blocks of IPv4 addresses reserved for use within private networks that will never be routed on the internet. Those private addresses can be routinely used in many networks concurrently because whilst IP addresses have to be unique, they only have to be unique within a given network.&lt;&#x2F;p&gt;
+&lt;p&gt;Your device gets one of those private addresses.&lt;&#x2F;p&gt;
+&lt;p&gt;But, how do you communicate on the internet if your device has an IP address that doesn’t work on the internet?&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;network-address-translation-nat&quot;&gt;Network Address Translation (NAT)&lt;&#x2F;h1&gt;
+&lt;p&gt;When your device makes a connection to something on the internet, your router does something called Network Address Translation (NAT).&lt;&#x2F;p&gt;
+&lt;p&gt;That is to say, on the inside of your network there will be plenty of those private addresses for all of the devices, but your router will map them all onto a much smaller pool of internet routable addresses and then juggle making sure the right internet traffic is sent to the right device.&lt;&#x2F;p&gt;
+&lt;p&gt;This means that it’s harder for websites to track you using your IP address, because a whole bunch of devices and users will be “hidden” behind a much smaller NAT pool, possibly just a single IP.&lt;&#x2F;p&gt;
+&lt;p&gt;With IPv6, the size of the address space is vast. There’s no need for NAT and so the IP address your machine has, is the IP that things you connect to on the internet see. For example when you browse a website.&lt;&#x2F;p&gt;
+&lt;p&gt;Instead of all devices on a network being hidden behind one IP, every individual device has a real internet IP address.&lt;&#x2F;p&gt;
+&lt;p&gt;This makes it a lot easier for websites to use your IP address to track you, if your IP address is now per device.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;so-just-how-big-is-ipv6-to-not-need-nat&quot;&gt;So just how big is IPv6 to not need NAT…?&lt;&#x2F;h1&gt;
+&lt;p&gt;Won’t we run out? We did with IPv4 after all…&lt;&#x2F;p&gt;
+&lt;p&gt;IPv4 has a total of 232 IP addresses. That’s 4,294,967,296. Four billion and change. Sounds like a lot, right?&lt;&#x2F;p&gt;
+&lt;p&gt;IPv6 has a total of 2128 IP addresses.&lt;&#x2F;p&gt;
+&lt;p&gt;That’s 340,282,366,920,938,463,463,374,607,431,768,211,456&lt;&#x2F;p&gt;
+&lt;p&gt;340 trillion trillion trillion.&lt;&#x2F;p&gt;
+&lt;p&gt;For context, that’s more than 100 times the number of atoms on the surface of the Earth&lt;sup class=&quot;footnote-reference&quot; id=&quot;fr-1-1&quot;&gt;&lt;a href=&quot;#fn-1&quot;&gt;1&lt;&#x2F;a&gt;&lt;&#x2F;sup&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;It was calculated that we could assign a unique &#x2F;48 to every human being on Earth for the next 480 years before we would run out.&lt;&#x2F;p&gt;
+&lt;p&gt;A &#x2F;48 is the expected common assignment block size. It’s what my ISP has assigned me for my home network. It’s the smallest block of IPv6 address space that you can route on the wider internet.&lt;&#x2F;p&gt;
+&lt;p&gt;Your typical individual network subnet will be assigned a &#x2F;64.&lt;&#x2F;p&gt;
+&lt;p&gt;A &#x2F;48 contains 65,536 &#x2F;64 subnets.&lt;&#x2F;p&gt;
+&lt;p&gt;A &#x2F;64 network contains 18,446,744,073,709,551,616 usable IPv6 addresses.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;back-to-privacy-then&quot;&gt;Back to Privacy, then…&lt;&#x2F;h1&gt;
+&lt;p&gt;So, IPv6 has the concept of Privacy Extensions (&lt;a href=&quot;https:&#x2F;&#x2F;datatracker.ietf.org&#x2F;doc&#x2F;html&#x2F;rfc8981&quot;&gt;RFC8981&lt;&#x2F;a&gt;) which means that it has a mechanism for your device to assign itself new IP addresses temporarily, use them for a while, and then discard them. But it requires that your network is assigning addresses statelessly.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;router-advertisements&quot;&gt;Router Advertisements&lt;&#x2F;h1&gt;
+&lt;p&gt;If you’re doing stateless IPv6 addresses, and you want to move away from using IPv4, how do you tell your devices about things like DNS resolvers?&lt;&#x2F;p&gt;
+&lt;p&gt;In order to statelessly configure its IPv6 addresses, your device sends something called Router Solicitation (RS) messages to the network. Available routers on the network respond with Router Advertisement (RA) messages.&lt;&#x2F;p&gt;
+&lt;p&gt;These RAs include the network prefix(es) in use so SLAAC and privacy extensions can work. They can also be used to tell the client device whether to actually use stateless addresses, whether to try DHCPv6, or whether to do a bit of both, and use stateless addresses but with other information (like DNS servers) from DHCPv6.&lt;&#x2F;p&gt;
+&lt;p&gt;More recently, to avoid the need for DHCPv6 at all, these RAs can now contain the DNS server information (RDNSS).&lt;&#x2F;p&gt;
+&lt;p&gt;OK, so we’ll switch off IPv4 inside our networks? We’ll give all the clients an IPv6 address.&lt;&#x2F;p&gt;
+&lt;p&gt;We can use the RA to give devices DNS servers.&lt;&#x2F;p&gt;
+&lt;p&gt;But what about things on the internet that are still only configured for IPv4…?&lt;&#x2F;p&gt;
+&lt;p&gt;How do you connect to them?&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;nat64&quot;&gt;NAT64&lt;&#x2F;h1&gt;
+&lt;p&gt;In a similar way to how NAT works above, translating networks of private addresses into a smaller pool of internet routable addresses, it’s possible to translate addresses between address families: ie: between IPv4 and IPv6.&lt;&#x2F;p&gt;
+&lt;p&gt;Your router can tell your device that the network has the ability to do NAT64.&lt;&#x2F;p&gt;
+&lt;p&gt;With this, devices connect to a mapped IPv6 address for any internet device that only has IPv4.&lt;&#x2F;p&gt;
+&lt;p&gt;There’s what’s called a well-known allocation for NAT64: &lt;code&gt;64:ff9b::&#x2F;96&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;This allows us to map the entire IPv4 address space. For example, let’s say your device wants to connect to a website that only has IPv4 and its address is &lt;code&gt;198.51.100.189&lt;&#x2F;code&gt;. This maps to &lt;code&gt;64:ff9b::c633:64bd&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;If you look carefully at the end of that, you can see we have &lt;code&gt;c633:64bd&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;c6&lt;&#x2F;code&gt; in hexadecimal is &lt;code&gt;198&lt;&#x2F;code&gt; in decimal.&lt;&#x2F;p&gt;
+&lt;p&gt;Converting the rest, then: &lt;code&gt;33&lt;&#x2F;code&gt; becomes &lt;code&gt;51&lt;&#x2F;code&gt;, &lt;code&gt;64&lt;&#x2F;code&gt; becomes &lt;code&gt;100&lt;&#x2F;code&gt;, and &lt;code&gt;bd&lt;&#x2F;code&gt; becomes &lt;code&gt;189&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;Your device makes an IPv6 connection to &lt;code&gt;64:ff9b::c633:64bd&lt;&#x2F;code&gt; and when this reaches the router, it knows to translate this back the other way and make an IPv4 connection to &lt;code&gt;198.51.100.189&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;But how does the device know to attempt to connect to that mapped IPv6 address?&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;dns64&quot;&gt;DNS64&lt;&#x2F;h1&gt;
+&lt;p&gt;One option is that you give them a DNS server that does DNS64.&lt;&#x2F;p&gt;
+&lt;p&gt;Usually, dual stack devices will prefer IPv6. As such, when they do DNS lookups to get the IP address for whatever the device needs to connect to, they will look up an IPv6 (AAAA) DNS record first, and fall back to IPv4 (A record).&lt;&#x2F;p&gt;
+&lt;p&gt;So, a DNS64 capable DNS server looks up the AAAA record. If it exists, it gives the response back to the device and everything works over IPv6.&lt;&#x2F;p&gt;
+&lt;p&gt;However, if the AAAA record doesn’t exist, the service only supports IPv4, the DNS64 server looks up the IPv4 A record, but instead of telling the requesting device, the DNS64 server generates the relevant mapped NAT64 IP address and returns that in the AAAA record.&lt;&#x2F;p&gt;
+&lt;p&gt;The device makes what it thinks is an IPv6 connection, and the NAT64 configuration on the router does the translation to IPv4.&lt;&#x2F;p&gt;
+&lt;p&gt;Google offer public DNS64 servers on &lt;code&gt;2001:4860:4860::64&lt;&#x2F;code&gt; and &lt;code&gt;2001:4860:4860::6464&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;But, some components that run on your machine can decide to use DNS servers of their own choice. This can lead to some things not using a DNS64 server, not getting the mapped IP, and continuing to use IPv4 which may be undesirable.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;customer-translator-clat&quot;&gt;Customer Translator (CLAT)&lt;&#x2F;h1&gt;
+&lt;p&gt;A second method is a customer translator or CLAT.&lt;&#x2F;p&gt;
+&lt;p&gt;Your device learns that the network can do NAT64 from the network itself. It learns what the prefix is and can do the mapping from the desired IPv4 address to IPv6 under the covers within the operating system.&lt;&#x2F;p&gt;
+&lt;p&gt;Further, your applications don’t need to know that they’re not making an IPv4 connection.&lt;&#x2F;p&gt;
+&lt;p&gt;Your device puts an unroutable placeholder IPv4 address on its network interface to keep up the pretence that IPv4 is working as usual.&lt;&#x2F;p&gt;
+&lt;p&gt;When your application attempts to make an IPv4 connection, the CLAT within your device works out the mapping, and makes the IPv6 connection to the mapped IPv6 address. The router does NAT64 and it all works seamlessly.&lt;&#x2F;p&gt;
+&lt;p&gt;This even works for IP literals.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;dhcp-option-108&quot;&gt;DHCP Option 108&lt;&#x2F;h1&gt;
+&lt;p&gt;So, how do we persuade devices that the network supports IPv6, and can do NAT64 for those pesky “IPv4 only” things?&lt;&#x2F;p&gt;
+&lt;p&gt;Many devices still send out DHCP for IPv4 first.&lt;&#x2F;p&gt;
+&lt;p&gt;So there’s a mechanism for saying “if you support CLAT, can use the network’s NAT64, and don’t want or need an IPv4 DHCP lease”.&lt;&#x2F;p&gt;
+&lt;p&gt;It’s called “option 108”.&lt;&#x2F;p&gt;
+&lt;p&gt;Devices capable of IPv6 mostly, will set option 108 in their DHCP request. If the DHCP server replies with option 108, the client doesn’t take an IPv4 lease and applies the placeholder&#x2F;unroutable IPv4 address to the interface.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;so-lets-make-it-work&quot;&gt;So, lets make it work…&lt;&#x2F;h1&gt;
+&lt;p&gt;I wanted to tinker with this and see it in action.&lt;&#x2F;p&gt;
+&lt;p&gt;My router&#x2F;firewall was a Juniper SRX240 which sadly will not run a new enough version of Junos to support RDNSS.&lt;&#x2F;p&gt;
+&lt;p&gt;It didn’t support telling the clients about the NAT64 prefix either, and it seemed very unhappy with me trying to persuade it to do DHCPv6 for just the DNS information.&lt;&#x2F;p&gt;
+&lt;p&gt;So, this felt like a great excuse to finally replace it, and so now I have a SRX340 in its place.&lt;&#x2F;p&gt;
+&lt;p&gt;The next thing to consider is client device support. My laptop is a MacBook, my family use iPhones and iPads. There’s the usual plethora of IoT things around the network too.&lt;&#x2F;p&gt;
+&lt;p&gt;Your mileage may vary if you have other things around your network.&lt;&#x2F;p&gt;
+&lt;p&gt;So I started with the guest VLAN as there’s less in there to disrupt.&lt;&#x2F;p&gt;
+&lt;p&gt;I want stateless addresses. I need to configure router advertisements anyway, so I’d like to skip needing DHCPv6 configured.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;configuration-time&quot;&gt;Configuration Time&lt;&#x2F;h1&gt;
+&lt;h2 id=&quot;nat&quot;&gt;NAT&lt;&#x2F;h2&gt;
+&lt;p&gt;First we’ll configure NAT64 so that when we tell the clients it’s available, it actually is. We need to do two things here:&lt;&#x2F;p&gt;
+&lt;ol&gt;
+&lt;li&gt;
+&lt;p&gt;We need to take traffic destined for the NAT64 prefix and static NAT it to IPv4. You can see this in the static NAT section at the top of the following configuration snippet.&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li&gt;
+&lt;p&gt;We need to then source NAT the traffic so that it comes from an internet routable IPv4 address. I’m fortunate here in that I have a &#x2F;29 from my ISP, and so to aid troubleshooting, I have the NAT64 traffic SNAT from a different IP to the IPv4 native traffic.&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;details&gt;
+&lt;summary&gt;Junos Configuration&lt;&#x2F;summary&gt;
+&lt;pre data-lang=&quot;Junos&quot; class=&quot;language-Junos z-code&quot;&gt;&lt;code class=&quot;language-Junos&quot; data-lang=&quot;Junos&quot;&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;security {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;    nat {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;        static {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;            rule-set&lt;span class=&quot;z-variable z-language z-junos&quot;&gt; nat64&lt;&#x2F;span&gt; {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                from zone guest;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                rule&lt;span class=&quot;z-variable z-language z-junos&quot;&gt; nat64&lt;&#x2F;span&gt; {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                    match {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;source-address&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt; 2001:db8:97::&#x2F;64;&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;destination-address&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt; 64:ff9b::&#x2F;96;&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                    }
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                    then {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                        static-nat {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                            inet;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                        }
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                    }
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                }
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;            }
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;        }
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;        source {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;            pool&lt;span class=&quot;z-variable z-language z-junos&quot;&gt; guest&lt;&#x2F;span&gt; {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                address {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                    &lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;192.0.2.230&#x2F;32&lt;&#x2F;span&gt;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                }
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;            }
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;            pool&lt;span class=&quot;z-variable z-language z-junos&quot;&gt; guest-nat64&lt;&#x2F;span&gt; {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                address {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                    &lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;192.0.2.229&#x2F;32&lt;&#x2F;span&gt;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                }
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;            }
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;            rule-set&lt;span class=&quot;z-variable z-language z-junos&quot;&gt; guest&lt;&#x2F;span&gt; {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                from zone guest;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                to zone untrust;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                rule&lt;span class=&quot;z-variable z-language z-junos&quot;&gt; guest&lt;&#x2F;span&gt; {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                    match {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                        source-address &lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;192.168.97.0&#x2F;24&lt;&#x2F;span&gt;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                    }
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                    then {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                        source-nat {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                           &lt;span class=&quot;z-entity z-name z-function z-junos&quot;&gt; pool&lt;&#x2F;span&gt; {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                                &lt;span class=&quot;z-variable z-language z-junos&quot;&gt;guest&lt;&#x2F;span&gt;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                            }
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                        }
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                    }
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                }
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                rule&lt;span class=&quot;z-variable z-language z-junos&quot;&gt; guest-nat64&lt;&#x2F;span&gt; {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                    match {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;source-address&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt; 2001:db8:97::&#x2F;64;&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                        destination-address &lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;0.0.0.0&#x2F;0&lt;&#x2F;span&gt;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                    }
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                    then {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                        source-nat {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                           &lt;span class=&quot;z-entity z-name z-function z-junos&quot;&gt; pool&lt;&#x2F;span&gt; {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                                &lt;span class=&quot;z-variable z-language z-junos&quot;&gt;guest-nat64&lt;&#x2F;span&gt;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                            }
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                        }
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                    }
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                }
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;            }
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;        }
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;    }
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;&#x2F;details&gt;
+&lt;h2 id=&quot;slaac-rdnss-and-pref64&quot;&gt;SLAAC, RDNSS and PREF64&lt;&#x2F;h2&gt;
+&lt;p&gt;Next we need to tell the SRX to do SLAAC, RDNSS and PREF64…&lt;&#x2F;p&gt;
+&lt;p&gt;First, our interface needs an IPv6 address.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;Junos&quot; class=&quot;language-Junos z-code&quot;&gt;&lt;code class=&quot;language-Junos&quot; data-lang=&quot;Junos&quot;&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;interfaces {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;    &lt;span class=&quot;z-support z-class z-junos&quot;&gt;irb&lt;&#x2F;span&gt; {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;        unit &lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;197&lt;&#x2F;span&gt; {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;            description &lt;span class=&quot;z-string z-quoted z-double z-junos&quot;&gt;Guest&lt;&#x2F;span&gt;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;            family inet {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                address &lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;192.168.97.1&#x2F;24&lt;&#x2F;span&gt;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;            }
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;            family inet6 {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;address&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt; 2001:db8:97::1&#x2F;64;&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;            }
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;        }
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;    }
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Next, SLAAC, RDNSS and PREF64.&lt;&#x2F;p&gt;
+&lt;p&gt;Within the protocols router-advertisement section, we will use the following options:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;dns-server-address&lt;&#x2F;code&gt; option to set the RDNSS server(s)&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;nat-prefix&lt;&#x2F;code&gt; to set the PREF64 prefix&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;pre data-lang=&quot;Junos&quot; class=&quot;language-Junos z-code&quot;&gt;&lt;code class=&quot;language-Junos&quot; data-lang=&quot;Junos&quot;&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;protocols {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;    router-advertisement {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;        interface &lt;span class=&quot;z-support z-class z-junos&quot;&gt;irb.197&lt;&#x2F;span&gt; {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;            preference high;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;            max-advertisement-interval &lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;20&lt;&#x2F;span&gt;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;            min-advertisement-interval &lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;3&lt;&#x2F;span&gt;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;            other-stateful-configuration;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;            solicit-router-advertisement-unicast;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;            default-lifetime &lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;9000&lt;&#x2F;span&gt;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;dns-server-address&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt; 2001:4860:4860::8888 &lt;&#x2F;span&gt;{
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                lifetime &lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;9000&lt;&#x2F;span&gt;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;            }
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;prefix&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt; 2001:db8:97::&#x2F;64;&lt;&#x2F;span&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;  &lt;&#x2F;span&gt;nat-prefix&lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt; 64:ff9b::&#x2F;96 &lt;&#x2F;span&gt;{
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                lifetime &lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;18000&lt;&#x2F;span&gt;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;            }
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;        }
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;    }
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h2 id=&quot;option-108&quot;&gt;Option 108&lt;&#x2F;h2&gt;
+&lt;p&gt;Lastly, we’ll support clients that support DHCP option 108 in our DHCP configuration.&lt;&#x2F;p&gt;
+&lt;pre data-lang=&quot;Junos&quot; class=&quot;language-Junos z-code&quot;&gt;&lt;code class=&quot;language-Junos&quot; data-lang=&quot;Junos&quot;&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;access {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;    address-assignment {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;        family inet {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;            network &lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;192.168.97.0&#x2F;24&lt;&#x2F;span&gt;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;            range r1 {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                low &lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;192.168.97.128&lt;&#x2F;span&gt;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                high &lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;192.168.97.191&lt;&#x2F;span&gt;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;            }
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;            dhcp-attributes {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                maximum-lease-time &lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;9000&lt;&#x2F;span&gt;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                router {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                    &lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;192.168.97.1&lt;&#x2F;span&gt;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                }
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                propagate-settings &lt;span class=&quot;z-support z-class z-junos&quot;&gt;irb.197&lt;&#x2F;span&gt;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;                option &lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;108&lt;&#x2F;span&gt; unsigned-integer &lt;span class=&quot;z-constant z-numeric z-integer z-long z-octal z-junos&quot;&gt;9000&lt;&#x2F;span&gt;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;            }
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;        }
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;    }
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-junos&quot;&gt;}
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h1 id=&quot;did-it-work&quot;&gt;Did it work?&lt;&#x2F;h1&gt;
+&lt;p&gt;This is from a MacBook running MacOS 15.&lt;&#x2F;p&gt;
+&lt;p&gt;We can see that the RA contains the configured details.&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;$ ipconfig getra en4
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;RA Received 04&#x2F;25&#x2F;2025 23:06:51 from fe80::cee1:9400:c55a:d430, length 96, hop limit 64, lifetime 9000s, reachable 0ms, retransmit 0ms, flags 0x48=[ other ], pref=high
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	source link-address option (1), length 8 (1): cc:e1:94:5a:d4:30
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	rdnss option (25), length 24 (3):  lifetime 9000s, addr: 2001:4860:4860::8888
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	prefix info option (3), length 32 (4):  2001:db8:97::&#x2F;64, flags [ onlink auto ], valid time 2592000s, pref. time 604800s
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	pref64 option (38), length 16 (2): 64:ff9b::&#x2F;96 lifetime 18000s
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;We can see that the interface has stateless IPv6 configured, including privacy extensions. It has also enabled CLAT46, and has added the ‘placeholder’ IPv4 address.&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;$ ifconfig en4
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;en4: flags=88e3&amp;lt;UP,BROADCAST,SMART,RUNNING,NOARP,SIMPLEX,MULTICAST&amp;gt; mtu 1500
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	options=6464&amp;lt;VLAN_MTU,TSO4,TSO6,CHANNEL_IO,PARTIAL_CSUM,ZEROINVERT_CSUM&amp;gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	ether a0:ce:c8:dd:5b:74
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	inet6 fe80::454:7b3a:963b:7fab%en4 prefixlen 64 secured scopeid 0xd
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	inet6 2001:db8:97:8ea:22c2:54cd:a385 prefixlen 64 autoconf secured
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	inet6 2001:db8:97:a4ba:e260:2aa1:59c0 prefixlen 64 deprecated autoconf temporary
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	inet6 2001:db8:97:479:67b7:1474:4197 prefixlen 64 deprecated autoconf temporary
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	inet 192.0.0.2 netmask 0xffffffff broadcast 192.0.0.2
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	inet6 2001:db8:97:e9bf:52f3:939c:6a03 prefixlen 64 autoconf temporary
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	inet6 2001:db8:97:2:c078:2867:d6d prefixlen 64 clat46
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	nat64 prefix 64:ff9b:: prefixlen 96
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	nd6 options=201&amp;lt;PERFORMNUD,DAD&amp;gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	media: autoselect (1000baseT &amp;lt;full-duplex&amp;gt;)
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	status: active
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;The device thinks it has an IPv4 connection to something in Microsoft…&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;$ netstat -f inet -an|grep ESTAB|grep 192.0
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;tcp4       0      0  192.0.0.2.51079        52.123.128.14.443      ESTABLISHED
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;&amp;lt;snip&amp;gt;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;What does the firewall have to say about that….?&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;kdyson@er&amp;gt; show security flow session destination-prefix 52.123.128.14
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;Total sessions: 0
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;…but &lt;code&gt;52.123.128.14&lt;&#x2F;code&gt; maps to &lt;code&gt;64:ff9b::347b:800e&lt;&#x2F;code&gt; so lets check again…&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;kdyson@er&amp;gt; show security flow session destination-prefix 64:ff9b::347b:800e
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;Session ID: 115964145637, Policy name: web-browsing&#x2F;10, Timeout: 1778, Session State: Valid
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;  In: 2001:db8:97:8ab:f46e:f285:917f&#x2F;51062 --&amp;gt; 64:ff9b::347b:800e&#x2F;443;tcp, Conn Tag: 0x0, If: irb.197, Pkts: 29, Bytes: 11041,
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;  Out: 52.123.128.14&#x2F;443 --&amp;gt; 192.0.2.229&#x2F;18910;tcp, Conn Tag: 0x0, If: pp0.2, Pkts: 24, Bytes: 8486,
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;Total sessions: 1
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;The IP details have been redacted&#x2F;sanitised, of course, but note that the SNAT IP is the guest-nat64 pool IP and not the regular guest pool IP.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;the-end&quot;&gt;The End!&lt;&#x2F;h1&gt;
+&lt;p&gt;Well, that turned out a bit longer than expected and has a couple of tangents along the way. If you stuck around for all of it, well done and thanks.&lt;&#x2F;p&gt;
+&lt;p&gt;I hope it’s been useful or interesting!&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;footnotes&quot;&gt;Footnotes&lt;&#x2F;h1&gt;
+&lt;h1 id=&quot;further-reading&quot;&gt;Further Reading&lt;&#x2F;h1&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;www.ietf.org&#x2F;archive&#x2F;id&#x2F;draft-link-v6ops-6mops-01.html&quot;&gt;https:&#x2F;&#x2F;www.ietf.org&#x2F;archive&#x2F;id&#x2F;draft-link-v6ops-6mops-01.html&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;2023.apricot.net&#x2F;assets&#x2F;files&#x2F;APPS314&#x2F;apnic55-deployingipv_1677492529.pdf&quot;&gt;https:&#x2F;&#x2F;2023.apricot.net&#x2F;assets&#x2F;files&#x2F;APPS314&#x2F;apnic55-deployingipv_1677492529.pdf&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;blog.apnic.net&#x2F;2019&#x2F;06&#x2F;07&#x2F;how-to-slaac-dhcpv6-on-juniper-vsrx&#x2F;&quot;&gt;https:&#x2F;&#x2F;blog.apnic.net&#x2F;2019&#x2F;06&#x2F;07&#x2F;how-to-slaac-dhcpv6-on-juniper-vsrx&#x2F;&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;section class=&quot;footnotes&quot;&gt;
+&lt;ol class=&quot;footnotes-list&quot;&gt;
+&lt;li id=&quot;fn-1&quot;&gt;
+&lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;www.internetsociety.org&#x2F;deploy360&#x2F;ipv6&#x2F;faq&quot;&gt;Internet Society IPv6 FAQ&lt;&#x2F;a&gt; &lt;a href=&quot;#fr-1-1&quot;&gt;↩&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;&#x2F;section&gt;
+</content>
+        
+    </entry>
+</feed>

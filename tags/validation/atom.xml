@@ -1,0 +1,96 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title>Karl&#x27;s Little World - validation</title>
+    <subtitle>...just stuff I thought I should write down and that might be useful to others...</subtitle>
+    <link rel="self" type="application/atom+xml" href="https://karldyson.github.io/karld-blog-website/tags/validation/atom.xml"/>
+    <link rel="alternate" type="text/html" href="https://karldyson.github.io/karld-blog-website/"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2017-04-24T00:00:00+00:00</updated>
+    <id>https://karldyson.github.io/karld-blog-website/tags/validation/atom.xml</id>
+    <entry xml:lang="en">
+        <title>Key Validation</title>
+        <published>2017-04-24T00:00:00+00:00</published>
+        <updated>2017-04-24T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://karldyson.github.io/karld-blog-website/posts/validation/"/>
+        <id>https://karldyson.github.io/karld-blog-website/posts/validation/</id>
+        
+        <content type="html" xml:base="https://karldyson.github.io/karld-blog-website/posts/validation/">&lt;h1 id=&quot;introduction&quot;&gt;Introduction&lt;&#x2F;h1&gt;
+&lt;p&gt;Following on from my post about &lt;a href=&quot;https:&#x2F;&#x2F;karldyson.github.io&#x2F;karld-blog-website&#x2F;posts&#x2F;a-new-key&#x2F;&quot;&gt;the new key being added to the zone&lt;&#x2F;a&gt;, the required 30 days have passed and if your resolver is RFC5011 compliant, it should now trust the key.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;checking&quot;&gt;Checking…&lt;&#x2F;h1&gt;
+&lt;p&gt;You can check this as follows:&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;bind&quot;&gt;BIND&lt;&#x2F;h2&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;$ cat &#x2F;var&#x2F;named&#x2F;managed-keys.bind
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;$ORIGIN .
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;$TTL 0  ; 0 seconds
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;@                       IN SOA  . . (
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                1904       ; serial
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                0          ; refresh (0 seconds)
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                0          ; retry (0 seconds)
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                0          ; expire (0 seconds)
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                0          ; minimum (0 seconds)
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                )
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                        KEYDATA 20170425142612 20170210095625 19700101000000 257 3 8 (
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                AwEAAagAIKlVZrpC6Ia7gEzahOR+9W29euxhJhVVLOyQ
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                bSEW0O8gcCjFFVQUTf6v58fLjwBd0YI0EzrAcQqBGCzh
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                &#x2F;RStIoO8g0NfnfL2MTJRkxoXbfDaUeVPQuYEhg37NZWA
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                JQ9VnMVDxP&#x2F;VHL496M&#x2F;QZxkjf5&#x2F;Efucp2gaDX6RS6CXp
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                oY68LsvPVjR0ZSwzz1apAzvN9dlzEheX7ICJBBtuA6G3
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                LQpzW5hOA2hzCTMjJPJ8LbqF6dsV6DoBQzgul0sGIcGO
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                Yl7OyQdXfZ57relSQageu+ipAdTTJ25AsRTAoub8ONGc
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                LmqrAmRLKBP1dfwhYB4N7knNnulqQxA+Uk1ihz0=
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                ) ; KSK; alg = RSASHA256; key id = 19036
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                ; next refresh: Tue, 25 Apr 2017 14:26:12 GMT
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                ; trusted since: Fri, 10 Feb 2017 09:56:25 GMT
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;2017-03-12.automated-ksk-test.research.icann.org KEYDATA 20170424152612 20170317172529 19700101000000 257 3 8 (
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                AwEAAa9qsSLDI+H0keqE3Yzdr6XuhqhBQVWw5xdgNoWL
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                hE4VxSEIBz9IuCA4w4ssSrClZ59seNc76ltDFcKJv3X9
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                jDjzRtBLjenIgV4n&#x2F;3GpKrAAnRlYbUtpBEdlk4mxoL3B
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                lX8pfLg7RQfTlWaxOUga1+CChcVieFF&#x2F;si&#x2F;eePc9HpZb
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                WxHZRLCAE8dlDa0aa0tfVAZWOnaifpmbTvhDK3tdvMU0
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                tfG2YfsOYcFB9z2KWmCDYwCONNKtls3p6wMwolun1h8I
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                Yo0PF98vqjAp3NVRZvKKdgyF&#x2F;bZ&#x2F;iJtAZFytXvXU6Gwa
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                5tOm1wgP6wuKupscP8KHBluZyOSKw4RMTk6YBdE=
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                ) ; KSK; alg = RSASHA256; key id = 3934
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                ; next refresh: Mon, 24 Apr 2017 15:26:12 GMT
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                ; trusted since: Fri, 17 Mar 2017 17:25:29 GMT
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                        KEYDATA 20170424152612 20170418002534 19700101000000 257 3 8 (
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                AwEAAfUtjasCuLysD4MbjG3v4Kyu0vvVJ&#x2F;0cIreP6flt
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                MeZmwQ5SRta&#x2F;mB+eFVjau+6YKra2UeTKxojBovHH2lZr
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                w7NNejL44&#x2F;Xps4gR3LSVMnCdwras+yvj4en64ghRGWYO
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                uB+Icb0AqrCUhLFWR8yx41UkfaA2vzFnM2xTx0N0+o6R
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                6UciWuwJResomQupOjNUy2ZAi81Y3pb0x3Lw4POjpcSJ
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                zrK4aZ&#x2F;5UPymplqhLEU2DsoQmyFlM5RNTt0YXR8XM4Yw
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                su&#x2F;scxg0u00IF1GC8xcyZUTMc1Rz98AY1VUo5QqUp9Vb
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                Aed5Aw1nNYfjLTj+zOykedgmjms1iNgh9EY111c=
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                ) ; KSK; alg = RSASHA256; key id = 19741
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                ; next refresh: Mon, 24 Apr 2017 15:26:12 GMT
+&lt;&#x2F;span&gt;&lt;mark&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                ; trusted since: Tue, 18 Apr 2017 00:25:34 GMT
+&lt;&#x2F;span&gt;&lt;&#x2F;mark&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;We can see in the output above that the new key, keytag 19741, is now trusted.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;unbound&quot;&gt;Unbound&lt;&#x2F;h2&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;$ cat &#x2F;var&#x2F;lib&#x2F;unbound&#x2F;2017-03-12.automated-ksk-test.research.icann.org.ds
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;; autotrust trust anchor file
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;;id: 2017-03-12.automated-ksk-test.research.icann.org. 1
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;;last_queried: 1493044058 ;;Mon Apr 24 14:27:38 2017
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;;last_success: 1493044058 ;;Mon Apr 24 14:27:38 2017
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;;next_probe_time: 1493047519 ;;Mon Apr 24 15:25:19 2017
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;;query_failed: 0
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;;query_interval: 3600
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;;retry_time: 3600
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;2017-03-12.automated-ksk-test.research.icann.org.       60      IN      DNSKEY  257 3 8 AwEAAa9qsSLDI+H0keqE3Yzdr6XuhqhBQVWw5xdgNoWLhE4VxSEIBz9IuCA4w4ssSrClZ59seNc76ltDFcKJv3X9jDjzRtBLjenIgV4n&#x2F;3GpKrAAnRlYbUtpBEdlk4mxoL3BlX8pfLg7RQfTlWaxOUga1+CChcVieFF&#x2F;si&#x2F;eePc9HpZbWxHZRLCAE8dlDa0aa0tfVAZWOnaifpmbTvhDK3tdvMU0tfG2YfsOYcFB9z2KWmCDYwCONNKtls3p6wMwolun1h8IYo0PF98vqjAp3NVRZvKKdgyF&#x2F;bZ&#x2F;iJtAZFytXvXU6Gwa5tOm1wgP6wuKupscP8KHBluZyOSKw4RMTk6YBdE= ;{id = 3934 (ksk), size = 2048b} ;;state=2 [  VALID  ] ;;count=0 ;;lastchange=1489997718 ;;Mon Mar 20 08:15:18 2017
+&lt;&#x2F;span&gt;&lt;mark&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;2017-03-12.automated-ksk-test.research.icann.org.       60      IN      DNSKEY  257 3 8 AwEAAfUtjasCuLysD4MbjG3v4Kyu0vvVJ&#x2F;0cIreP6fltMeZmwQ5SRta&#x2F;mB+eFVjau+6YKra2UeTKxojBovHH2lZrw7NNejL44&#x2F;Xps4gR3LSVMnCdwras+yvj4en64ghRGWYOuB+Icb0AqrCUhLFWR8yx41UkfaA2vzFnM2xTx0N0+o6R6UciWuwJResomQupOjNUy2ZAi81Y3pb0x3Lw4POjpcSJzrK4aZ&#x2F;5UPymplqhLEU2DsoQmyFlM5RNTt0YXR8XM4Ywsu&#x2F;scxg0u00IF1GC8xcyZUTMc1Rz98AY1VUo5QqUp9VbAed5Aw1nNYfjLTj+zOykedgmjms1iNgh9EY111c= ;{id = 19741 (ksk), size = 2048b} ;;state=2 [  VALID  ] ;;count=0 ;;lastchange=1492590342 ;;Wed Apr 19 08:25:42 2017
+&lt;&#x2F;span&gt;&lt;&#x2F;mark&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Similarly, for Unbound, we can see above that the status is now &lt;mark&gt;VALID&lt;&#x2F;mark&gt;.&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+</feed>
