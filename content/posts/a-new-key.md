@@ -4,9 +4,6 @@ description = "The next step of the RFC5011 keyroll of the root zone KSK"
 date = 2017-03-21
 [extra]
 toc = true
-toc_inline = true
-toc_ordered = true
-styles = ["posts/demo.css"]
 disclaimer = "This keyroll is long in the past now, but understanding the process is still useful"
 [taxonomies]
 tags = ["dns","rfc5011","keyroll","ksk","dnssec"]
@@ -73,7 +70,7 @@ $ dig +multiline @::1 2017-03-12.automated-ksk-test.research.icann.org dnskey
 
 # Troubleshooting
 
-Key <mark>19741<mark> is a new KSK in the zone.
+Key <mark>19741</mark> is a new KSK in the zone.
 
 ## BIND9
 

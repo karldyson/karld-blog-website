@@ -4,9 +4,6 @@ description = "How to do cost effective electricity usage monitoring from Curren
 date = 2012-09-16
 [extra]
 toc = false
-toc_inline = true
-toc_ordered = true
-styles = ["posts/demo.css"]
 [taxonomies]
 tags = ["linux","electricity","currentcost","monitoring","raspberry-pi","perl","munin"]
 +++

@@ -4,9 +4,6 @@ description = "Getting the third stream working on the Hikvision cameras and the
 date = 2025-12-07
 [extra]
 toc = true
-toc_inline = true
-toc_ordered = true
-styles = ["posts/demo.css"]
 [taxonomies]
 tags = ["hikvision","stream3","sub-stream","frigate","home-assistant"]
 +++

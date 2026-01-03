@@ -2,6 +2,8 @@
 title = "Nintendo Switch NAT Types"
 description = "Tinkering with NAT on my firewall to see if I can improve the Nintendo Switch detected NAT type"
 date = 2025-04-25
+[extra]
+toc = false
 [taxonomies]
 tags = ["Nintendo","Switch","Network","NAT","Juniper","SRX"]
 categories = ["Technical"]

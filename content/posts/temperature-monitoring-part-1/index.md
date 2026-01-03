@@ -4,9 +4,8 @@ description = "Part 1 in a series of replacing my temperature monitoring"
 date = 2025-10-19
 [extra]
 toc = true
-toc_inline = true
-toc_ordered = true
-styles = ["posts/demo.css"]
+[extra.comments]
+id = "115831105808128754"
 [taxonomies]
 tags = ["rpi-pico","pico","raspberry-pi","rpi","temperature","monitoring"]
 +++

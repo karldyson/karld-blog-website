@@ -5,9 +5,6 @@ date = 2012-08-20
 updated = "2017-10-23"
 [extra]
 toc = false
-toc_inline = true
-toc_ordered = true
-styles = ["posts/demo.css"]
 [taxonomies]
 tags = ["linux","temperature","owfs","one-wire","monitoring","raspberry-pi","perl","munin"]
 +++

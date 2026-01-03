@@ -3,10 +3,7 @@ title = "Wiper Relay"
 description = "How to find and replace the wiper relay on a BMW E60 5-Series"
 date = 2017-04-01
 [extra]
-go_to_top = true
-#toc = true
-toc_inline = true
-toc_ordered = true
+toc = true
 [taxonomies]
 tags = ["BMW","E60","Wiper","Relay"]
 categories = ["Car Maintenance"]

@@ -3,9 +3,6 @@ title = "IPv6, Mostly..."
 date = 2025-04-26
 [extra]
 toc = true
-toc_inline = true
-toc_ordered = true
-styles = ["posts/demo.css"]
 [taxonomies]
 tags = ["dhcp","dns64","ipv6","ipv6-mostly","juniper","srx","junos","nat64","rdnss","slaac","option108","option-108","option 108"]
 +++

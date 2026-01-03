@@ -4,9 +4,6 @@ description = "How to make IPv6 privacy extensions work on Linux"
 date = 2025-04-28
 [extra]
 toc = true
-toc_inline = true
-toc_ordered = true
-styles = ["posts/demo.css"]
 [taxonomies]
 tags = ["ipv6","linux","slaac","privacy","privacy-extensions"]
 +++

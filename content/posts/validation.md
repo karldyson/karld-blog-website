@@ -4,9 +4,6 @@ description = "The last in the series of posts on the root zone RFC5011 KSK keyr
 date = 2017-04-24
 [extra]
 toc = true
-toc_inline = true
-toc_ordered = true
-styles = ["posts/demo.css"]
 disclaimer = "This keyroll is long in the past now, but understanding the process is still useful"
 [taxonomies]
 tags = ["dns","rfc5011","keyroll","ksk","dnssec","validation"]

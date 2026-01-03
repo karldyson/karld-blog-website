@@ -4,10 +4,7 @@ description = "What are IPv6 Privacy Extensions?"
 date = 2011-04-07
 updated = "2017-03-21"
 [extra]
-toc = false
-toc_inline = true
-toc_ordered = true
-styles = ["posts/demo.css"]
+toc = true
 [taxonomies]
 tags = ["ipv6","privacy-extensions"]
 +++

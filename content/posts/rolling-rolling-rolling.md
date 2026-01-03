@@ -4,9 +4,6 @@ description = "The root zone is going to roll it's KSK following the RFC5011 def
 date = 2017-03-17
 [extra]
 toc = true
-toc_inline = true
-toc_ordered = true
-styles = ["posts/demo.css"]
 disclaimer = "This keyroll is long in the past now, but understanding the process is still useful"
 [taxonomies]
 tags = ["dns","rfc5011","keyroll","ksk","dnssec"]

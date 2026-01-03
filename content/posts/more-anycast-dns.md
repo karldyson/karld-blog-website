@@ -4,9 +4,6 @@ description = "Anycasting DNS to the internet"
 date = 2020-11-22
 [extra]
 toc = false
-toc_inline = true
-toc_ordered = true
-styles = ["posts/demo.css"]
 [taxonomies]
 tags = ["anycast","dns","bgp","exabgp","network","junos"]
 +++

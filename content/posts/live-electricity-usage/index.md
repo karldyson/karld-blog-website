@@ -4,9 +4,6 @@ description = "My set up to have live monitoring and graphing of my electricity 
 date = 2012-10-02
 [extra]
 toc = false
-toc_inline = true
-toc_ordered = true
-styles = ["posts/demo.css"]
 [taxonomies]
 tags = ["linux","electricity","currentcost","monitoring","raspberry-pi","perl","munin"]
 +++

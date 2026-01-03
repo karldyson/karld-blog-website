@@ -4,9 +4,6 @@ description = "BIND9 has introduced dnssec-policy which makes it easier to sign 
 date = 2020-11-22
 [extra]
 toc = false
-toc_inline = true
-toc_ordered = true
-styles = ["posts/demo.css"]
 [taxonomies]
 tags = ["dns","keyroll","ksk","zsk","csk","dnssec"]
 +++

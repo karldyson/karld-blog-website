@@ -4,9 +4,8 @@ description = "Implementing the new temperature probes to monitor the heating sy
 date = 2025-11-09
 [extra]
 toc = true
-toc_inline = true
-toc_ordered = true
-styles = ["posts/demo.css"]
+[extra.comments]
+id = "115831105808128754"
 [taxonomies]
 tags = ["rpi-pico","pico","raspberry-pi","rpi","temperature","monitoring"]
 +++

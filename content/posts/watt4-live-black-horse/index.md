@@ -4,9 +4,6 @@ description = "Pictures of Watt4 playing live at a nearby pub"
 date = 2012-10-01
 [extra]
 toc = false
-toc_inline = true
-toc_ordered = true
-styles = ["posts/demo.css"]
 [taxonomies]
 tags = ["watt4","photography"]
 categories = ["gallery"]

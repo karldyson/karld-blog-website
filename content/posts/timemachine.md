@@ -2,10 +2,14 @@
 title = "TimeMachine"
 description = "...after the Synology died, one of the things that needed replacing was TimeMachine..."
 date = 2025-12-18
+[extra]
+toc = true
 [taxonomies]
 tags = ["macos","timemachine","samba","linux"]
 categories = ["Technical"]
 +++
+
+# Introduction
 
 I have a MacBook and whilst some of the things I care about get dropped in iCloud and magic'd away onto someone else's computer for safe keeping and sync'ing to my other Apple devices, I like to back it up too. The Synology does (did?) TimeMachine and so the first thing to replace was that.
 
@@ -34,7 +38,7 @@ Now, this RPi is in a different VLAN to my main client LAN, and so whilst I'm su
 
 I authenticated and then opened the TimeMachine control panel. The rest worked just as you'd expect, and a backup kicked off soon after.
 
-## ...the SRX config...
+# ...the SRX config...
 
 Just in case you're wondering; this is the slightly redacted config for the SRX...
 

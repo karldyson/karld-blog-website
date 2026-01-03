@@ -4,9 +4,6 @@ description = "You're not just opening UDP/53 for DNS, are you...?"
 date = 2010-03-18
 [extra]
 toc = false
-toc_inline = true
-toc_ordered = true
-styles = ["posts/demo.css"]
 [taxonomies]
 tags = ["rfc","axfr","tcp","dns"]
 +++

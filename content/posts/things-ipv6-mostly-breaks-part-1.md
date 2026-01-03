@@ -4,9 +4,6 @@ description = "Things that appear to be broken by IPv6 mostly networks"
 date = 2025-05-08
 [extra]
 toc = false
-toc_inline = true
-toc_ordered = true
-styles = ["posts/demo.css"]
 [taxonomies]
 tags = ["dhcp","dns64","ipv6","ipv6-mostly","juniper","srx","junos","nat64","rdnss","slaac","option108","option-108","option 108","zwift"]
 +++

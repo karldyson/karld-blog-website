@@ -4,9 +4,6 @@ description = "My Amazon Echo Dot and Show devices stopped working properly shor
 date = 2021-03-01
 [extra]
 toc = false
-toc_inline = true
-toc_ordered = true
-styles = ["posts/demo.css"]
 [taxonomies]
 tags = ["alexa","dns","blocking"]
 +++
