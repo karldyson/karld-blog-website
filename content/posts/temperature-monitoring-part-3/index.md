@@ -89,9 +89,9 @@ I also updated the bit of code that makes the API call, and had it send a multic
 
 This builds the `message_dict` within `try` or `except` and then passes it to the `multicast` subroutine in `finally` to send it.
 
-# Prometheus & Graphana
+# Prometheus & Grafana
 
-I already use prometheus elsewhere for collecting metrics from various things, but in all cases I'm using existing exporters and predefined Grafana dashboards. This was an opportunity to have a go from scratch. Learn. Understand.
+I already use Prometheus elsewhere for collecting metrics from various things, but in all cases I'm using existing exporters and predefined Grafana dashboards. This was an opportunity to have a go from scratch. Learn. Understand.
 
 ## Prometheus Exporter
 
@@ -111,7 +111,7 @@ The full code can be seen in the [Github repository](https://github.com/karldyso
 
 Whilst the code only processes the UDP packets containing packets containing temperature updates, it does log the status updates as well, and so the log file for the running service can be used to debug the current state of the IOT Plotter API calls too.
 
-It'd be fairly trivial to alter both the pico code and the prometheus exporter to talk unicast one to the other, in the event that your network hampers multicast, for example. I may add this to the TODO list.
+It'd be fairly trivial to alter both the pico code and the Prometheus exporter to talk unicast one to the other, in the event that your network hampers multicast, for example. I may add this to the TODO list.
 
 ### Initialise the socket
 
@@ -198,7 +198,7 @@ In Grafana I created a new dashboard, and a variable picker. This picker uses th
 
 <figure>
 {{ image(url="grafana-friendly-name-variable.jpg") }}
-<figcaption>Screenshot from Graphana for friendly_name variable definition</figcaption>
+<figcaption>Screenshot from Grafana for friendly_name variable definition</figcaption>
 </figure>
 
 The main graph then uses this, defaulting to "All".
@@ -210,7 +210,7 @@ In the following example you can see:
 
 <figure>
 {{ image(url="temperature-graph.jpg") }}
-<figcaption>Screenshot from Graphana of temperature graphs</figcaption>
+<figcaption>Screenshot from Grafana of temperature graphs</figcaption>
 </figure>
 
 ### Alerts
