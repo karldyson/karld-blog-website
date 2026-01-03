@@ -4,9 +4,8 @@ description = "Improving the temperature monitoring with multicast, prometheus a
 date = 2025-12-16
 [extra]
 toc = true
-toc_inline = true
-toc_ordered = true
-styles = ["posts/demo.css"]
+[extra.comments]
+id = "115831105808128754"
 [taxonomies]
 tags = ["rpi-pico","pico","raspberry-pi","rpi","temperature","monitoring","multicast","micropython"]
 +++
@@ -242,6 +241,6 @@ A nice thing about the design is that if you configure and plug in a new sensor:
 * Prometheus will pick them up automatically the next time it scrapes.
 * Finally, Grafana will see them automatically, and at least for the main graph on the dashboard, they'll appear automatically.
 
-# Footnotes
+# Footnotes
 
 [^1]: ok, this is actually a Raspberry Pi 5 running Raspbian, so it's the ARM64 (aarch64) version of Bookworm at the time of writing
