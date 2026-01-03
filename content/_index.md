@@ -6,6 +6,25 @@ insert_anchor_links = "left"
 template = "archive_and_latest.html"
 +++
 
+{% crt() %}
+```
+	   0  1  2  3  4  5  6  7  8  9  0  1  2  3  4  5
+	  +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+	  |                      ID                       |
+	  +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+	  |QR|   Opcode  |AA|TC|RD|RA|   Z    |   RCODE   |
+	  +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+	  |                    QDCOUNT                    |
+	  +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+	  |                    ANCOUNT                    |
+	  +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+	  |                    NSCOUNT                    |
+	  +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+	  |                    ARCOUNT                    |
+	  +--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+--+
+```
+{% end %}
+
 # Karl's Little World
 
 I've written a few articles through 2025 and have been increasingly dissatisfied with the themes available on Wordpress' platform as a "Personal" subscriber.
@@ -20,7 +39,7 @@ Given my Wordpress subscription renews (or (spoiler), not, as it happens) in Feb
 
 So here we are. I hope you like it, and I hope you find it easy on the eye.
 
-I'll spin up a contacts page soon enough, but in the mean time, <a href="mailto:blog@karld.blog?subject=Blog%20Feedback">email me</a>, or explore the [discussions section of the repository](https://github.com/karldyson/karld-blog-website/discussions).
+I'll spin up a contacts page soon enough, but in the mean time, <a href="mailto:blog@karld.blog?subject=Blog%20Feedback">email me</a>, explore the [discussions section of the repository](https://github.com/karldyson/karld-blog-website/discussions), or [toot me](https://mastodon.social/@karldyson).
 
 Thanks,
 Karl
