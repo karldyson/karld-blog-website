@@ -32,6 +32,18 @@ I have a background in the design and operations of large scale critical infrast
 
 I'm not a software developer, but I can get by in perl, python, and a bunch of similar things. I'm currently kinda learning Go.
 
+# Photographer
+
+I enjoy spending time behind the camera. However, I often pick officiating at Motorsport events instead of photograhing them, for example.
+
+Years ago I learnt from research, enthusiastic friends and a pro I knew, to spend as much as you can afford to on the glass, the body should be mostly a secondary consideration. It's not *quite* that simple, but you get the idea.
+
+No amount of money spent on a great body can make light appear at the back of poor glass.
+
+So, I started with a Canon 20D, I picked up a 24-70L f/2.8 with the body. A friend was upgrading and sold me a used but great condition 70-200L IS f/2.8 with a 1.4x teleconverter and I was set.
+
+More recently I was very luck to overhear a friend at the office talking about having just bought themselves a new DSLR and I enquired if what they were replacing and were they selling... TL;DR is that I now have a Canon 5DMkIII in excellent condition, and they threw in the 50mm f/1.8 with it because they'd jumped ship to Sony and had no use for the 50mm any more.
+
 # What you'll find here
 
 Mostly what you'll find here is stuff I think I should write down. This usually happens when I've either searched for something and couldn't easily find it, or I just fancy writing a post on something I've done or am doing.
