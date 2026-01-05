@@ -5,7 +5,7 @@ date = 2026-01-05
 [extra]
 toc = true
 [extra.comments]
-#id = ""
+id = "115844922422152457"
 [taxonomies]
 tags = ["ntp","raspberry-pi","rpi5","stratum 0"]
 categories = ["Technical"]
