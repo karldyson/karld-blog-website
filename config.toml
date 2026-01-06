@@ -60,7 +60,7 @@ show_copy_button = false
 show_reading_time = true
 show_share_button = true
 show_backlinks = true
-card = false
+card = "/static/card.png"
 
 [extra.nav]
 show_feed = true
