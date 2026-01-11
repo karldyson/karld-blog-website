@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title>Karl&#x27;s Little World - blocking</title>
+    <subtitle>...just stuff I thought I should write down and that might be useful to others...</subtitle>
+    <link rel="self" type="application/atom+xml" href="https://karldyson.github.io/karld-blog-website/tags/blocking/atom.xml"/>
+    <link rel="alternate" type="text/html" href="https://karldyson.github.io/karld-blog-website/"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2021-03-01T00:00:00+00:00</updated>
+    <id>https://karldyson.github.io/karld-blog-website/tags/blocking/atom.xml</id>
+    <entry xml:lang="en">
+        <title>Alexa, why are you broken...?</title>
+        <published>2021-03-01T00:00:00+00:00</published>
+        <updated>2021-03-01T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://karldyson.github.io/karld-blog-website/posts/alexa-why-are-you-broken/"/>
+        <id>https://karldyson.github.io/karld-blog-website/posts/alexa-why-are-you-broken/</id>
+        
+        <content type="html" xml:base="https://karldyson.github.io/karld-blog-website/posts/alexa-why-are-you-broken/">&lt;p&gt;For a bit of context, I have an Echo Show as a bedside alarm clock, and I also have an Echo Clock paired to an Echo Dot in the kitchen, primarily to visualise timers when I’m cooking.&lt;&#x2F;p&gt;
+&lt;p&gt;After a power cut late on Friday evening, the Echo Show came back on but displaying the wrong time (more or less an hour behind, but not exactly). If you asked “Alexa, what time is it?”, the correct time would be spoken, despite the wrong time still being displayed. Weird.&lt;&#x2F;p&gt;
+&lt;p&gt;So, I got up, late, of course, and went to make breakfast. The Echo Clock in the kitchen is now also displaying the wrong time, but not the same wrong time that the Echo Show is displaying. Again, asking the paired Echo Dot for the time results in it speaking the correct time. Weirder and weirder.&lt;&#x2F;p&gt;
+&lt;p&gt;I tried a bunch of things with the clock, reset and re-pair, checking the location and timezone settings for the devices in the app, but nothing resolved the incorrect time. I also noticed that the clock wasn’t displaying timers properly, and the Echo Dot had stopped announcing the end of timers.&lt;&#x2F;p&gt;
+&lt;p&gt;I’d checked whether the Echo devices were unable to contact some central cloud service at Amazon with a quick check of twitter and some down detectors, and they didn’t seem to indicate widespread problems, and then it struck me: I wondered if my RPZ had picked up one or more entries that was causing this?&lt;&#x2F;p&gt;
+&lt;p&gt;For some context at this point, I’ve been trialling the Energized Protection “Ultimate” in RPZ format. More about that soon in another post.&lt;&#x2F;p&gt;
+&lt;p&gt;I got the MAC addresses for the Echo units from the Alexa app, grabbed the assigned IPs from the firewall and then looked in the RPZ logs to see if anything was being blocked for those client IPs – &lt;strong&gt;BINGO!&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;The log entries all start at the time of the power outage, and the TTL on (at least) &lt;code&gt;fireoscaptiveportal.com&lt;&#x2F;code&gt; is &lt;code&gt;60&lt;&#x2F;code&gt;, and so I wonder if the Echo devices resolve the IP and then continue to use the resolved IP, ignoring the TTL?&lt;&#x2F;p&gt;
+&lt;p&gt;There were four domains continually being blocked for the two devices:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;fireoscaptiveportal.com&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;mas-sdk.amazon.com&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;prod.amazoncrl.com&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;unagi-na.amazon.com&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;I added whitelist entries to the RPZ for those, and immediatly could hear the Echo Dot in the kitchen announcing something … it was a timer from a few days before. As I stopped one, it would tell me about another, until it seemed to get very confused, resulting in a power off&#x2F;power on.&lt;&#x2F;p&gt;
+&lt;p&gt;The RPZ entries I added were:&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;fireoscaptiveportal.com.override. 5 IN CNAME rpz-passthru.
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;*.fireoscaptiveportal.com.override. 5 IN CNAME rpz-passthru.
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Both the Echo Show and Echo Clock immediately corrected their displayed time, and timers were both displayed correctly and announced at the end correctly.&lt;&#x2F;p&gt;
+&lt;p&gt;I’ve subsequently added fixed IP leases in the firewall’s DHCP config for the Echo devices, and added client-ip whitelisting for them in the RPZ.&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;32.105.0.1.10.rpz-client-ip.override. 5 IN CNAME rpz-passthru.
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;32.106.0.1.10.rpz-client-ip.override. 5 IN CNAME rpz-passthru.
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+</content>
+        
+    </entry>
+</feed>

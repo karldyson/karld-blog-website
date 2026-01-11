@@ -1,0 +1,80 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title>Karl&#x27;s Little World - Relay</title>
+    <subtitle>...just stuff I thought I should write down and that might be useful to others...</subtitle>
+    <link rel="self" type="application/atom+xml" href="https://karldyson.github.io/karld-blog-website/tags/relay/atom.xml"/>
+    <link rel="alternate" type="text/html" href="https://karldyson.github.io/karld-blog-website/"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2017-04-01T00:00:00+00:00</updated>
+    <id>https://karldyson.github.io/karld-blog-website/tags/relay/atom.xml</id>
+    <entry xml:lang="en">
+        <title>Wiper Relay</title>
+        <published>2017-04-01T00:00:00+00:00</published>
+        <updated>2017-04-01T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://karldyson.github.io/karld-blog-website/posts/wiper-relay/"/>
+        <id>https://karldyson.github.io/karld-blog-website/posts/wiper-relay/</id>
+        
+        <content type="html" xml:base="https://karldyson.github.io/karld-blog-website/posts/wiper-relay/">&lt;blockquote class=&quot;important&quot;&gt;
+	&lt;p class=&quot;alert-title&quot;&gt;
+		&lt;i class=&quot;icon&quot;&gt;&lt;&#x2F;i&gt;Important&lt;&#x2F;p&gt;
+	&lt;p&gt;Note that this article applies to the UK version when talking about the “passenger side” and is actually written &lt;em&gt;because&lt;&#x2F;em&gt; I couldn’t find an article helping with a UK layout.&lt;&#x2F;p&gt;
+
+&lt;&#x2F;blockquote&gt;
+&lt;h2 id=&quot;introduction&quot;&gt;Introduction&lt;&#x2F;h2&gt;
+&lt;p&gt;Recently, the wipers have started to play up on my &lt;a href=&quot;https:&#x2F;&#x2F;en.wikipedia.org&#x2F;wiki&#x2F;BMW_5_Series_(E60)#2007_facelift&quot;&gt;2010 BMW E60 LCI&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;I booked it in to &lt;a href=&quot;http:&#x2F;&#x2F;www.oxfordbmw.co.uk&#x2F;&quot;&gt;North Oxford BMW&lt;&#x2F;a&gt; last Saturday morning, as it’d been there for services and I’m happy with the work and the customer care.&lt;&#x2F;p&gt;
+&lt;p&gt;Of course, sod’s law jumped in, and on the Friday night on the way home from work, the wipers worked fine. Grr.&lt;&#x2F;p&gt;
+&lt;p&gt;I took it along to BMW anyway, and thankfully the wipers played up for the technician, and the computer had logged helpful fault codes.&lt;&#x2F;p&gt;
+&lt;p&gt;The motor was declared as fine, and a replacement relay was recommended.&lt;&#x2F;p&gt;
+&lt;p&gt;They had none in stock, and so I ordered one to collect; I’m quite competent and can swap a relay.&lt;&#x2F;p&gt;
+&lt;p&gt;In the mean time I checked the handbook; no mention of relays, just fuses. OK; off to google we go.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;relay-location&quot;&gt;Relay Location&lt;&#x2F;h2&gt;
+&lt;p&gt;The relays are in the “e-box” which is &lt;strong&gt;under&lt;&#x2F;strong&gt; one of the cabin air intake filters. A helpful Youtube video showed how to get to it.&lt;&#x2F;p&gt;
+&lt;p&gt;I picked the relay up this morning, and as the weather was nice, set about replacing it this afternoon.&lt;&#x2F;p&gt;
+&lt;p&gt;I undid the clips etc on the drivers side cabin air filter, and fiddled with the surround, before, eventually, the lower part came off, revealing…&lt;&#x2F;p&gt;
+&lt;p&gt;…no, not the e-box as expected…&lt;&#x2F;p&gt;
+&lt;p&gt;I was faced with the brake servo, which immediately made perfect sense; I immediately realised I’d watched a US video.&lt;&#x2F;p&gt;
+&lt;p&gt;So I put it all back together, and started taking the passenger side apart.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;let-s-start-again&quot;&gt;Let’s start again…&lt;&#x2F;h2&gt;
+&lt;figure&gt;
+&lt;a href=&quot;bmw_1.jpg&quot;&gt;
+		&lt;img class=&quot;&quot;alt=&quot;Engine bay&quot;src=&quot;bmw_1.jpg&quot;&#x2F;&gt;
+	&lt;&#x2F;a&gt;
+&lt;figcaption&gt;Image of the passenger side engine bay before disassembly, note this is a UK model&lt;&#x2F;figcaption&gt;
+&lt;&#x2F;figure&gt;
+&lt;p&gt;Undo that clip along the left edge of the cover, and there’s a clip you can undo with a 13mm socket on the lower right corner (as pictured). Lift it off.&lt;&#x2F;p&gt;
+&lt;p&gt;Then, you need to unclip the seal (pictured) - it just lifts off. There’s a clip on plastic cover in the middle below the windscreen, just visible in the left of the picture above; it just slides to the right and comes off.&lt;&#x2F;p&gt;
+&lt;p&gt;Once that’s done, you can undo the screw (centre, bottom, next to the red battery terminal, in the picture above) and 3 more of the hex 13mm to be undone with the socket.&lt;&#x2F;p&gt;
+&lt;p&gt;You can remove an odd little plastic cover that fits around the right hand bonnet stay with a bit of a wiggle, and then the cover comes off revealing…&lt;&#x2F;p&gt;
+&lt;figure&gt;
+&lt;a href=&quot;bmw_2.jpg&quot;&gt;
+		&lt;img class=&quot;&quot;alt=&quot;Top of the e-box&quot;src=&quot;bmw_2.jpg&quot;&#x2F;&gt;
+	&lt;&#x2F;a&gt;
+&lt;figcaption&gt;Image of the top of the e-box...&lt;&#x2F;figcaption&gt;
+&lt;&#x2F;figure&gt;
+&lt;p&gt;Undo the alan screws holding the lid on, and…&lt;&#x2F;p&gt;
+&lt;figure&gt;
+&lt;a href=&quot;bmw_3.jpg&quot;&gt;
+		&lt;img class=&quot;&quot;alt=&quot;Location of the e-box&quot;src=&quot;bmw_3.jpg&quot;&#x2F;&gt;
+	&lt;&#x2F;a&gt;
+&lt;a href=&quot;bmw_4.jpg&quot;&gt;
+		&lt;img class=&quot;&quot;alt=&quot;Inside the e-box&quot;src=&quot;bmw_4.jpg&quot;&#x2F;&gt;
+	&lt;&#x2F;a&gt;
+&lt;figcaption&gt;Images showing the insides of the e-box&lt;&#x2F;figcaption&gt;
+&lt;&#x2F;figure&gt;
+&lt;p&gt;That browny-beige relay is the wiper relay.&lt;&#x2F;p&gt;
+&lt;p&gt;The invoice says it’s a &lt;strong&gt;B61.36.8.384.505.&lt;&#x2F;strong&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Hope this helps someone.&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+</feed>

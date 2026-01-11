@@ -1,0 +1,55 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+      <title>Karl&#x27;s Little World - zsk</title>
+      <link>https://karldyson.github.io/karld-blog-website/</link>
+      <description>...just stuff I thought I should write down and that might be useful to others...</description>
+      <generator>Zola</generator>
+      <language>en</language>
+      <atom:link href="https://karldyson.github.io/karld-blog-website/tags/zsk/rss.xml" rel="self" type="application/rss+xml"/>
+      <lastBuildDate>Sun, 22 Nov 2020 00:00:00 +0000</lastBuildDate>
+      <item>
+          <title>Automatic Key Rolls</title>
+          <pubDate>Sun, 22 Nov 2020 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://karldyson.github.io/karld-blog-website/posts/automatic-key-rolling/</link>
+          <guid>https://karldyson.github.io/karld-blog-website/posts/automatic-key-rolling/</guid>
+          <description xml:base="https://karldyson.github.io/karld-blog-website/posts/automatic-key-rolling/">&lt;p&gt;I recently moved my test domains onto a separate DNS master so that I could more freely tinker with these domains without risk to my regular stable domains.&lt;&#x2F;p&gt;
+&lt;p&gt;I use catalog zones (maybe this is for another post!) to distribute the zones to save myself the bother of having to configure all the slaves, particularly since I’ve recently started spinning up an experimental anycast network of virtual machines, and so I added a second catalog to my slave servers, and away we went.&lt;&#x2F;p&gt;
+&lt;p&gt;I’m a keen user of debian, and so I built the test master on ‘sid’ so I could run bleeding edge.&lt;&#x2F;p&gt;
+&lt;p&gt;The benefit, primarily, was that whereas Debian 10 gets BIND 9.11.5, sid gets 9.16.8 (at the time of writing) as well as a newer version of openssl, meaning I could sign a zone with algorithm 16, ED448. DS digest algorithm 4 (SHA-384) is also supported.&lt;&#x2F;p&gt;
+&lt;p&gt;The biggy for me, though, and the main driver for having the newer version of BIND, was &lt;code&gt;dnssec-policy;&lt;&#x2F;code&gt; getting BIND to automatically roll your keys.&lt;&#x2F;p&gt;
+&lt;p&gt;I’m not aware of an ability in this version to support either a hook to run a script to interact with your registrar to update a DS record when your KSK rolls, nor an ability to automate CDS or CDNSKEY, but they’ll be coming at some point in the future.&lt;&#x2F;p&gt;
+&lt;p&gt;I decided to test this by auto-rolling my ZSK, so, I added the following to &lt;code&gt;&#x2F;etc&#x2F;bind&#x2F;named.conf.options&lt;&#x2F;code&gt; :&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;dnssec-policy normal {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	dnskey-ttl PT1H;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	keys {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;		ksk lifetime unlimited algorithm ecdsa384;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;		zsk lifetime 90D algorithm ecdsa384;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	};
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	max-zone-ttl P1D;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	parent-ds-ttl P1D;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	parent-propagation-delay PT1H;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	parent-registration-delay P1D;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	publish-safety PT1H;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	retire-safety PT1H;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	signatures-refresh P5D;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	signatures-validity P2W;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	signatures-validity-dnskey P2W;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	zone-propagation-delay PT5M;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;};
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;You don’t need to create initial keys or anything; BIND will do all the key juggling automatically, and will store them wherever you set &lt;code&gt;key-directory&lt;&#x2F;code&gt; to in your &lt;code&gt;options&lt;&#x2F;code&gt; section.&lt;&#x2F;p&gt;
+&lt;p&gt;It doesn’t matter how you add your domains; I use &lt;code&gt;rndc addzone&lt;&#x2F;code&gt; as I have scripts that automate this as well as adding the zone to the catalog (again, that’ll be in another post at some point), the key thing being you just specify the policy in the zone. I’m also using &lt;code&gt;inline-signing;&lt;&#x2F;code&gt; whether you do will depend on your setup. Here’s a sample:&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;zone &amp;quot;some.zone&amp;quot; {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    type master;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    file &amp;quot;&#x2F;path&#x2F;to&#x2F;some.zone.file&amp;quot;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    dnssec-policy &amp;quot;normal&amp;quot;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    inline-signing yes;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;};
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;…and as if by magic, &lt;code&gt;rndc reconfig&lt;&#x2F;code&gt;, and the keyfiles are created, and the zone signed.&lt;&#x2F;p&gt;
+</description>
+      </item>
+    </channel>
+</rss>

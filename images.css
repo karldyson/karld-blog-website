@@ -1,0 +1,18 @@
+.image-outer {
+	width: 100%;
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: space-around;
+	overflow: auto;
+}
+.image-inner {
+	display: inline-block;
+	margin: 8px;
+	border: 8px;
+	padding: 8px;
+}
+.image {
+	border: 0px;
+	margin: 0px;
+	padding: 0px;
+}

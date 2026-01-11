@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<feed xmlns="http://www.w3.org/2005/Atom" xml:lang="en">
+    <title>Karl&#x27;s Little World - synology</title>
+    <subtitle>...just stuff I thought I should write down and that might be useful to others...</subtitle>
+    <link rel="self" type="application/atom+xml" href="https://karldyson.github.io/karld-blog-website/tags/synology/atom.xml"/>
+    <link rel="alternate" type="text/html" href="https://karldyson.github.io/karld-blog-website/"/>
+    <generator uri="https://www.getzola.org/">Zola</generator>
+    <updated>2026-01-11T00:00:00+00:00</updated>
+    <id>https://karldyson.github.io/karld-blog-website/tags/synology/atom.xml</id>
+    <entry xml:lang="en">
+        <title>Death of the Synology...?</title>
+        <published>2026-01-11T00:00:00+00:00</published>
+        <updated>2026-01-11T00:00:00+00:00</updated>
+        
+        <author>
+          <name>
+            
+              Unknown
+            
+          </name>
+        </author>
+        
+        <link rel="alternate" type="text/html" href="https://karldyson.github.io/karld-blog-website/posts/possible-death-of-the-synology/"/>
+        <id>https://karldyson.github.io/karld-blog-website/posts/possible-death-of-the-synology/</id>
+        
+        <content type="html" xml:base="https://karldyson.github.io/karld-blog-website/posts/possible-death-of-the-synology/">&lt;p&gt;I had a text a couple of weeks before Christmas from a friend who lives at the other end of the village, asking if the power was out.&lt;&#x2F;p&gt;
+&lt;p&gt;It wasn’t for me, but a huge area the other end of the village was out and was due to be out for hours.&lt;&#x2F;p&gt;
+&lt;p&gt;So, they came to visit for a few hours.&lt;&#x2F;p&gt;
+&lt;p&gt;Anyway.&lt;&#x2F;p&gt;
+&lt;p&gt;In the recent &lt;a href=&quot;https:&#x2F;&#x2F;karldyson.github.io&#x2F;karld-blog-website&#x2F;posts&#x2F;timemachine&#x2F;&quot;&gt;TimeMachine&lt;&#x2F;a&gt; post I alluded to TimeMachine being one of the first things to replace after the Synology had died, or, at least, failed to come back.&lt;&#x2F;p&gt;
+&lt;p&gt;Something happened that evening; some sort of power glitch. The lights didn’t go out or flicker, but &lt;del&gt;some&lt;&#x2F;del&gt;&#x2F;&lt;del&gt;most&lt;&#x2F;del&gt;&#x2F;all ? of the stuff connected to the UPS in the garage seems to have rebooted at the same time.&lt;&#x2F;p&gt;
+&lt;p&gt;…and thankfully everything seems to have survivedi… …apart from the Synology.&lt;&#x2F;p&gt;
+&lt;p&gt;It’s a DS1812+ and my inbox suggests I originally ordered it on January 10&lt;sup&gt;th&lt;&#x2F;sup&gt; 2013, so I guess it’s had a fairly good innings.&lt;&#x2F;p&gt;
+&lt;p&gt;Mostly, it’s a secondary storage for data and not the primary location for anything so it’s more an inconvenience than anything.&lt;&#x2F;p&gt;
+&lt;p&gt;Google, and a friend, suggest that it sitting there failing to spin up the drives whilst stubornly flashing it’s little blue light means that it’s likely unhappy rather than dead, so now that Christmas and New Year are behind us, I’ll open it up and see if any of the obvious gotchas are to blame.&lt;&#x2F;p&gt;
+&lt;p&gt;Searching suggests the first places to check are:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;BIOS battery&lt;&#x2F;li&gt;
+&lt;li&gt;Disk on Module (DOM, internal storage for its operating system)&lt;&#x2F;li&gt;
+&lt;li&gt;PSU&lt;&#x2F;li&gt;
+&lt;li&gt;Failing RAM&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;Since electricity prices soared a few years ago now, and I switched off the lovely, but very thirsty servers running my virtual machines, anything that I want to run home here typically runs on some flavour of Raspberry Pi. They’re small, do the job, and when it comes to electricity, they are quite the opposite, even in what is now becoming a small group, compared to a Dell R720XD full of 15k SAS drives.&lt;&#x2F;p&gt;
+&lt;p&gt;The oldest of the Raspberry Pi’s are getting long in the tooth and so I’m working on replacing a couple of them.&lt;&#x2F;p&gt;
+&lt;p&gt;As mentioned elsewhere, the oldest, I think, is the one doing the old temperature monitoring, currently being replaced with a collection of Pico 2W units. There are &lt;a href=&quot;&#x2F;tags&#x2F;temperature&quot;&gt;other posts&lt;&#x2F;a&gt; here that talk about that.&lt;&#x2F;p&gt;
+&lt;p&gt;The next oldest two are a general workhorse RPi4 that kinda does some monitoring, is the auth DNS server for my internal DNS zone, and the RPiB that does NTP. I wrote recently &lt;a href=&quot;https:&#x2F;&#x2F;karldyson.github.io&#x2F;karld-blog-website&#x2F;posts&#x2F;stratum-zero-ntp-server&#x2F;&quot;&gt;about the new stratum zero time server&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;With the possible death of the Synology, I wanted to take time to think about whether I &lt;em&gt;need&lt;&#x2F;em&gt; a NAS, or whether other solutions would work better for my needs, and so in the mean time, I got on with replacing the workhorse and the time server in one go, adding a bunch of extra storage for &lt;a href=&quot;https:&#x2F;&#x2F;karldyson.github.io&#x2F;karld-blog-website&#x2F;posts&#x2F;timemachine&#x2F;&quot;&gt;TimeMachine&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;As you’ll know, I’m a bit of a DNS geek, and I also have DNS related project underway that will gradually use some of the storage (circa 3GB per day), so I’ll know what the longer term plan is for the Synology before I need to work out whether I need to put more storage in the new RPi.&lt;&#x2F;p&gt;
+&lt;p&gt;Sorry if a search engine sent you this way hoping for an answer; I’m trying to be better (or at least less bad) at writing these things up, and so I’ll come back and write up what I find soon…&lt;&#x2F;p&gt;
+</content>
+        
+    </entry>
+</feed>

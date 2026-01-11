@@ -1,0 +1,177 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+      <title>Karl&#x27;s Little World - ntp</title>
+      <link>https://karldyson.github.io/karld-blog-website/</link>
+      <description>...just stuff I thought I should write down and that might be useful to others...</description>
+      <generator>Zola</generator>
+      <language>en</language>
+      <atom:link href="https://karldyson.github.io/karld-blog-website/tags/ntp/rss.xml" rel="self" type="application/rss+xml"/>
+      <lastBuildDate>Mon, 05 Jan 2026 00:00:00 +0000</lastBuildDate>
+      <item>
+          <title>Stratum Zero NTP Server</title>
+          <pubDate>Mon, 05 Jan 2026 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://karldyson.github.io/karld-blog-website/posts/stratum-zero-ntp-server/</link>
+          <guid>https://karldyson.github.io/karld-blog-website/posts/stratum-zero-ntp-server/</guid>
+          <description xml:base="https://karldyson.github.io/karld-blog-website/posts/stratum-zero-ntp-server/">&lt;h1 id=&quot;introduction&quot;&gt;Introduction&lt;&#x2F;h1&gt;
+&lt;p&gt;A looooong time ago I made an NTP stratum 0 NTP server out of a Raspberry Pi B and a suitable Adafruit GPS hat.&lt;&#x2F;p&gt;
+&lt;p&gt;It doesn’t do any of these fancy new &lt;abbr title=&quot;Global Navigation Satellite System&quot;&gt;GNSS&lt;&#x2F;abbr&gt;&lt;sup class=&quot;footnote-reference&quot; id=&quot;fr-1-1&quot;&gt;&lt;a href=&quot;#fn-1&quot;&gt;1&lt;&#x2F;a&gt;&lt;&#x2F;sup&gt;, it just does &lt;abbr title=&quot;Global Positioning System&quot;&gt;GPS&lt;&#x2F;abbr&gt;&lt;sup class=&quot;footnote-reference&quot; id=&quot;fr-2-1&quot;&gt;&lt;a href=&quot;#fn-2&quot;&gt;2&lt;&#x2F;a&gt;&lt;&#x2F;sup&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;But it does time and it maintains time sufficiently well, sufficiently accurately and sufficiently stable and consistently that &lt;a href=&quot;https:&#x2F;&#x2F;www.ntppool.org&#x2F;a&#x2F;karldyson&quot;&gt;it’s in the NTP.org pool&lt;&#x2F;a&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;But a few weeks ago, my Synology died (I’ll write about that soon), and rather than knee jerk replace the NAS, I decided to accelerate the plan to replace a couple of the older Raspberry Pi’s here which would buy me time to consider what to do with the Synology after I got a chance to look at it now Christmas and New Year are out of the way.&lt;&#x2F;p&gt;
+&lt;p&gt;The oldest RPi is the one doing the &lt;a href=&quot;https:&#x2F;&#x2F;karldyson.github.io&#x2F;karld-blog-website&#x2F;posts&#x2F;temperature-monitoring&#x2F;&quot;&gt;original temperature monitoring&lt;&#x2F;a&gt; but replacement of that is well under way, with a &lt;a href=&quot;&#x2F;tags&#x2F;temperature&#x2F;&quot;&gt;few articles&lt;&#x2F;a&gt; talking about what I’m doing there.&lt;&#x2F;p&gt;
+&lt;p&gt;The next oldest is the RPiB doing NTP and the next oldest is one of the general workhorses, a Raspberry Pi 4.&lt;&#x2F;p&gt;
+&lt;p&gt;This article covers (what there is of) the build of a Raspberry Pi 5, and the config of NTP etc.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;hardware&quot;&gt;Hardware&lt;&#x2F;h1&gt;
+&lt;h2 id=&quot;order&quot;&gt;Order&lt;&#x2F;h2&gt;
+&lt;p&gt;I ordered the following parts:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;thepihut.com&#x2F;products&#x2F;raspberry-pi-5?variant=42531604955331&quot;&gt;Raspberry Pi 5 8GB&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;thepihut.com&#x2F;products&#x2F;raspberry-pi-27w-usb-c-power-supply?variant=42531604070595&quot;&gt;Raspberry Pi 27W PSU&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;thepihut.com&#x2F;products&#x2F;nvme-base-duo-for-raspberry-pi-5?variant=43279496806595&quot;&gt;Pimoroni NVMe Base Duo&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;thepihut.com&#x2F;products&#x2F;active-cooler-for-raspberry-pi-5?variant=42531603906755&quot;&gt;Raspberry Pi Active Cooler&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;thepihut.com&#x2F;products&#x2F;lc29h-series-dual-band-gps-module-for-raspberry-pi-aa-gps-hat?variant=43342959771843&quot;&gt;Waveshare LC29H(AA)&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;a href=&quot;https:&#x2F;&#x2F;www.amazon.co.uk&#x2F;dp&#x2F;B0CN17F7XC?tag=karldyson-21&quot;&gt;WD-Black 2TB M.2 NVMe 2230&lt;&#x2F;a&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;I conveniently already had a spare &lt;a href=&quot;https:&#x2F;&#x2F;www.amazon.co.uk&#x2F;dp&#x2F;B09X7DMBVF?tag=karldyson-21&quot;&gt;256GB Sandisk microSDXC card&lt;&#x2F;a&gt; which I installed the latest Raspbian on while I waited for my orders to arrive.&lt;&#x2F;p&gt;
+&lt;p&gt;I doubt this unit is going to work particularly hard but for the tiny cost, why wouldn’t you have the cooler fan?&lt;&#x2F;p&gt;
+&lt;p&gt;Lastly, the selection of NVMe…. the PCIe bus on the RPi5 does Gen2 speeds by default, and it wasn’t clear whether the Pimoroni board supported Gen3 speeds. So, the 2230 2TB NVMe, a Gen4 device, will never get pushed to its claimed 5,150MB&#x2F;s, and so being a sensible price, reputable brand, and available, it fit the bill.&lt;&#x2F;p&gt;
+&lt;p&gt;Every time a buy and build a little Raspberry Pi I consider other little NUC type boxes, but for “a little computer doing nothing particularly CPU taxing and being nice and frugal on the electricity” these things are hard to beat.&lt;&#x2F;p&gt;
+&lt;p&gt;That whole list came to £335, plus ~£25-30 to cover the cost of the microSDXC I already had (although the Pi will boot from the NVMe perfectly happily).&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;build&quot;&gt;Build&lt;&#x2F;h2&gt;
+&lt;p&gt;The NVMe slots are difficult to reach and doing the retaining screw up would be impossible post build, so I started there, installing the NVMe into the Base Duo, and installing the standoffs and the little rubber feet. If I want to add a further NVMe in future, I’ll need to undo the standoffs from underneath, but that’s fine.&lt;&#x2F;p&gt;
+&lt;figure&gt;
+&lt;img class=&quot;start&quot;src=&quot;pcie-connection.jpg&quot;&#x2F;&gt;
+&lt;&#x2F;figure&gt;
+&lt;p&gt;Getting the PCIe cable installed is fiddly, shall we say. I found it easiest to install the RPi end first and then pop the other end into the Base Duo. If you have ways to hold the two boards still next to each other with the RPi inverted, whilst simultaneously inserting the cable, that might be easier.&lt;&#x2F;p&gt;
+&lt;aside&gt;
+&lt;figure&gt;
+&lt;img class=&quot;&quot;src=&quot;active-cooler-connection.jpg&quot;&#x2F;&gt;
+&lt;&#x2F;figure&gt;
+&lt;&#x2F;aside&gt;
+&lt;p&gt;I then carefully attached the active cooler and plugged in its cable. Be careful here; the plug only goes in one way round. No excessive force is required. No guarantees the cables are always the same colour, I guess, but on all of mine the yellow cable is outermost.&lt;&#x2F;p&gt;
+&lt;p&gt;The Waveshare GNSS hat attaches to the GPIO pins. I ordered one of the &lt;a href=&quot;https:&#x2F;&#x2F;thepihut.com&#x2F;products&#x2F;stacking-header-for-pi-a-b-pi-2-pi-3-2x20-extra-tall-header?variant=1130974052&quot;&gt;extra tall GPIO headers&lt;&#x2F;a&gt; as well as a &lt;a href=&quot;https:&#x2F;&#x2F;thepihut.com&#x2F;products&#x2F;0-1-2x20-pin-strip-right-angle-female-header?variant=27740138193&quot;&gt;90° angled header&lt;&#x2F;a&gt; so that I could see which worked best once I had the parts laid out on the desk in front of me.&lt;&#x2F;p&gt;
+&lt;p&gt;As you can see in the pictures, I opted for the 90° header as it ensures the active cooler is completely clear, at the expense of making putting this in a case harder.&lt;&#x2F;p&gt;
+&lt;p&gt;The Waveshare comes with a weatherproof antenna and the adaptor to connect to the board, so you’re all ready to go when it arrives.&lt;&#x2F;p&gt;
+&lt;figure&gt;
+&lt;img class=&quot;&quot;src=&quot;rpi-above.jpg&quot;&#x2F;&gt;
+&lt;img class=&quot;&quot;src=&quot;rpi-side.jpg&quot;&#x2F;&gt;
+&lt;figcaption&gt;Pictures showing the hardware build&lt;&#x2F;figcaption&gt;
+&lt;&#x2F;figure&gt;
+&lt;aside&gt;
+&lt;img class=&quot;&quot;src=&quot;gps-antenna-connection.jpg&quot;&#x2F;&gt;
+&lt;&#x2F;aside&gt;
+&lt;p&gt;Lastly, &lt;em&gt;very carefully&lt;&#x2F;em&gt; connect the GPS antenna to the Waveshare card:&lt;&#x2F;p&gt;
+&lt;p&gt;…it just gently snaps together.&lt;&#x2F;p&gt;
+&lt;p&gt;Make sure it’s located centrally and gently squeeze.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;troubleshooting-status&quot;&gt;Troubleshooting &#x2F; Status&lt;&#x2F;h2&gt;
+&lt;p&gt;There are four LEDs on the board, as follows, starting from the antenna end of the board:&lt;&#x2F;p&gt;
+&lt;ol&gt;
+&lt;li&gt;Red - Indicates power is on&lt;&#x2F;li&gt;
+&lt;li&gt;Green - Pulse Per Second (PPS)&lt;&#x2F;li&gt;
+&lt;li&gt;Green - Data Received (Rx) - data received by the board from the Pi&lt;&#x2F;li&gt;
+&lt;li&gt;Green - Data Transmit (Tx) - data transmitted by the board to the Pi&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;p&gt;In normal operations, the red LED should be on, the PPS LED should flash once per second as soon as the board has a 3D position lock and the last LED will flash once per second to indicate the NMEA + PPS data being sent to the Pi.&lt;&#x2F;p&gt;
+&lt;p&gt;If you’re watching the NMEA output from the Waveshare using &lt;code&gt;cgps&lt;&#x2F;code&gt; or &lt;code&gt;gpsmon&lt;&#x2F;code&gt; you’ll notice that each line of output starts with a five characters preceeded by a &lt;code&gt;$&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;The format for &lt;code&gt;$XXYYY&lt;&#x2F;code&gt; is as follows:&lt;&#x2F;p&gt;
+&lt;p&gt;XX - tells you the GNSS constellation “talker identifier”&lt;&#x2F;p&gt;
+&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th style=&quot;text-align: left&quot;&gt;XX&lt;&#x2F;th&gt;&lt;th style=&quot;text-align: left&quot;&gt;Constellation&lt;&#x2F;th&gt;&lt;th style=&quot;text-align: left&quot;&gt;Region&lt;&#x2F;th&gt;&lt;&#x2F;tr&gt;&lt;&#x2F;thead&gt;&lt;tbody&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;GA&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;Galileo&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;European&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;GB&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;BeiDou&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;Chinese&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;GL&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;GLONASS&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;Russia&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;GP&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;GPS&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;USA&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;GQ&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;QZSS&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;Japan&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;GI&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;NavIC&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;India&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;GN&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;Generic&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;All&#x2F;Any&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;&#x2F;tbody&gt;&lt;&#x2F;table&gt;
+&lt;p&gt;YYY - tells you the sentence &#x2F; protocol identier. There are many, but for example:&lt;&#x2F;p&gt;
+&lt;table&gt;&lt;thead&gt;&lt;tr&gt;&lt;th style=&quot;text-align: left&quot;&gt;YYY&lt;&#x2F;th&gt;&lt;th style=&quot;text-align: left&quot;&gt;Description&lt;&#x2F;th&gt;&lt;&#x2F;tr&gt;&lt;&#x2F;thead&gt;&lt;tbody&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;GGA&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;Global Positioning System Fix Data&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;tr&gt;&lt;td style=&quot;text-align: left&quot;&gt;GLL&lt;&#x2F;td&gt;&lt;td style=&quot;text-align: left&quot;&gt;Geographic position , longitude, latitude and time&lt;&#x2F;td&gt;&lt;&#x2F;tr&gt;
+&lt;&#x2F;tbody&gt;&lt;&#x2F;table&gt;
+&lt;h1 id=&quot;software-configuration&quot;&gt;Software &amp;amp; Configuration&lt;&#x2F;h1&gt;
+&lt;p&gt;Raspbian installation is very straight forward; you download the &lt;a href=&quot;https:&#x2F;&#x2F;www.raspberrypi.com&#x2F;software&#x2F;&quot;&gt;Raspberry Pi Imager&lt;&#x2F;a&gt; for your operating system, and pretty much follow the prompts, either picking the desktop version or the lite version (without all the desktop stuff). I’m not going down the rabbit hole of the detail of that, but shout if you think I should do an article on that…?&lt;&#x2F;p&gt;
+&lt;p&gt;The packages we need here are the GPSD daemon, a time server daemon and optionally some troubleshooting tools.&lt;&#x2F;p&gt;
+&lt;p&gt;But first, we need to make an alteration to the Raspberry Pi configuration.&lt;&#x2F;p&gt;
+&lt;p&gt;The &lt;a href=&quot;https:&#x2F;&#x2F;www.waveshare.com&#x2F;wiki&#x2F;LC29H(XX)_GPS&#x2F;RTK_HAT&quot;&gt;Waveshare spec sheet&lt;&#x2F;a&gt; shows us that the PPS signal will be on &lt;kbd&gt;GPIO PIN 18&lt;&#x2F;kbd&gt; and so we’ll add the following to &lt;code&gt;&#x2F;boot&#x2F;firmware&#x2F;config.txt&lt;&#x2F;code&gt;:&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;dtoverlay=pps-gpio,gpiopin=18
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;We also need to ensure that:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;SPI is enabled&lt;&#x2F;li&gt;
+&lt;li&gt;Serial Port is enabled&lt;&#x2F;li&gt;
+&lt;li&gt;Serial Console is disabled&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;It’s a lot clearer in the GUI, but I use the minimal Raspbian because this isn’t going to be plugged into a screen.&lt;&#x2F;p&gt;
+&lt;img class=&quot;end&quot;src=&quot;https:&amp;#x2F;&amp;#x2F;www.waveshare.com&amp;#x2F;w&amp;#x2F;upload&amp;#x2F;d&amp;#x2F;df&amp;#x2F;Thermal_Camera_HAT_Use03.jpg&quot;&#x2F;&gt;
+&lt;p&gt;&lt;code&gt;sudo raspi-config&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;ol&gt;
+&lt;li&gt;Go into the Interfaces menu&lt;&#x2F;li&gt;
+&lt;li&gt;Select Serial&lt;&#x2F;li&gt;
+&lt;li&gt;Select it and turn off&lt;&#x2F;li&gt;
+&lt;li&gt;Select “No” to serial &lt;em&gt;console&lt;&#x2F;em&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;Select “Yes” to serial &lt;em&gt;port&lt;&#x2F;em&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;p&gt;Now you can reboot your Pi and we can get to configuring the software.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;packages&quot;&gt;Packages&lt;&#x2F;h2&gt;
+&lt;p&gt;First, we’ll install the packages we need:&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;gpsd chrony gpsd-tools pps-tools&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Next we can get to configuration:&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;gpsd&quot;&gt;GPSD&lt;&#x2F;h3&gt;
+&lt;p&gt;My &lt;code&gt;&#x2F;etc&#x2F;default&#x2F;gpsd&lt;&#x2F;code&gt; looks like this:&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;DEVICES=&amp;quot;&#x2F;dev&#x2F;ttyAMA0 &#x2F;dev&#x2F;pps0&amp;quot;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;GPSD_OPTIONS=&amp;quot;-n&amp;quot;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;USBAUTO=&amp;quot;false&amp;quot;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;…if you then restart gpsd with &lt;code&gt;sudo systemctl restart gpsd&lt;&#x2F;code&gt; then we can check it’s all working&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;gpsmon&lt;&#x2F;code&gt; and&#x2F;or &lt;code&gt;cgps&lt;&#x2F;code&gt; should stream NMEA output and show you the status of your GNSS. It may take a few minutes to get its first lock, so be patient.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;chrony&quot;&gt;Chrony&lt;&#x2F;h3&gt;
+&lt;p&gt;To get NTP onto the network, we need a time daemon. I prefer &lt;code&gt;chrony&lt;&#x2F;code&gt; but I’ve had success with &lt;code&gt;ntpd&lt;&#x2F;code&gt; in the past too if you prefer or are more familiar with that.&lt;&#x2F;p&gt;
+&lt;p&gt;GPSD isn’t a source in Chrony terms. Chrony only expects to find &lt;code&gt;peer&lt;&#x2F;code&gt;, &lt;code&gt;pool&lt;&#x2F;code&gt; and &lt;code&gt;server&lt;&#x2F;code&gt; statements in the &lt;code&gt;.sources&lt;&#x2F;code&gt; files in &lt;code&gt;&#x2F;etc&#x2F;chrony&#x2F;sources.d&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;p&gt;GPSD is a &lt;code&gt;refclock&lt;&#x2F;code&gt; and so we’ll create &lt;code&gt;&#x2F;etc&#x2F;chrony&#x2F;conf.d&#x2F;pps.conf&lt;&#x2F;code&gt; with the following contents:&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;refclock PPS &#x2F;dev&#x2F;pps0 lock GPS+ refid GPPS trust prefer
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;refclock SHM 0 refid GPS precision 1e-1 delay 0.2
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;refclock SHM 1 refid GPS+ precision 1e-7
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;If we restart chrony we can then see some stats. I’ve snipped the other pool members from the followin output:&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;$ chronyc -n sources
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;MS Name&#x2F;IP address         Stratum Poll Reach LastRx Last sample
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;===============================================================================
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;#* GPPS                          0   4   377    11   +566ns[ +695ns] +&#x2F;-  227ns
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;#? GPS                           0   4   377    11   +102ms[ +102ms] +&#x2F;-  200ms
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;#? GPS+                          0   4   377    11   +566ns[ +566ns] +&#x2F;-  227ns
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;$ chronyc -n sourcestats
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;Name&#x2F;IP Address            NP  NR  Span  Frequency  Freq Skew  Offset  Std Dev
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;==============================================================================
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;GPPS                        6   3    81     +0.002      0.045    +16ns   407ns
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;GPS                         6   3    80    -36.968    183.158    +99ms  1420us
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;GPS+                        6   3    81     +0.001      0.047    -43ns   426ns
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;I’m also going to add this to &lt;a href=&quot;https:&#x2F;&#x2F;www.ntppool.org&quot;&gt;NTP Pool Project&lt;&#x2F;a&gt;, so I need to permit the internet to come and get time from me, so I also added &lt;code&gt;&#x2F;etc&#x2F;chrony&#x2F;conf.d&#x2F;acl.conf&lt;&#x2F;code&gt; that looks like this:&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;# allow the internet
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;allow 0.0.0.0&#x2F;0
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;allow ::&#x2F;0
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;…obviously you should set that to whatever is appropriate for your use case.&lt;&#x2F;p&gt;
+&lt;p&gt;If you want to add to the pool, go to the link above, create an account and off you go. The pool will monitor you and only let you in if you’re accurate and stable.&lt;&#x2F;p&gt;
+&lt;p&gt;My server has been up for 24 days now. I added to my pre-existing pool account and it’s currently serving ~4,100 clients. Roughly 3,850 IPv4 and 250 IPv6.&lt;&#x2F;p&gt;
+&lt;h3 id=&quot;lastly&quot;&gt;Lastly…&lt;&#x2F;h3&gt;
+&lt;p&gt;Just make sure the daemons are set to start at system boot:&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;sudo systemctl enable gpsd chrony&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;footnotes&quot;&gt;Footnotes&lt;&#x2F;h1&gt;
+&lt;section class=&quot;footnotes&quot;&gt;
+&lt;ol class=&quot;footnotes-list&quot;&gt;
+&lt;li id=&quot;fn-1&quot;&gt;
+&lt;p&gt;Global Positioning System (GPS) is actually the name of the American GNSS, although because it was the &lt;em&gt;only&lt;&#x2F;em&gt; GNSS for a long time, it’s what a lot of people use as the generic term. &lt;a href=&quot;#fr-1-1&quot;&gt;↩&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;li id=&quot;fn-2&quot;&gt;
+&lt;p&gt;Global Navigation Satellite System (GNSS) is the generic name. &lt;a href=&quot;#fr-2-1&quot;&gt;↩&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;&#x2F;section&gt;
+</description>
+      </item>
+    </channel>
+</rss>

@@ -1,0 +1,30 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+      <title>Karl&#x27;s Little World - bootable</title>
+      <link>https://karldyson.github.io/karld-blog-website/</link>
+      <description>...just stuff I thought I should write down and that might be useful to others...</description>
+      <generator>Zola</generator>
+      <language>en</language>
+      <atom:link href="https://karldyson.github.io/karld-blog-website/tags/bootable/rss.xml" rel="self" type="application/rss+xml"/>
+      <lastBuildDate>Mon, 22 Jan 2018 00:00:00 +0000</lastBuildDate>
+      <item>
+          <title>Bootable USB Sticks</title>
+          <pubDate>Mon, 22 Jan 2018 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://karldyson.github.io/karld-blog-website/posts/bootable-usb-sticks/</link>
+          <guid>https://karldyson.github.io/karld-blog-website/posts/bootable-usb-sticks/</guid>
+          <description xml:base="https://karldyson.github.io/karld-blog-website/posts/bootable-usb-sticks/">&lt;p&gt;I’m finally getting around to building a new ESX host to play with, and of course, nothing has an optical drive in it any more, so I need to make a bootable USB stick.&lt;&#x2F;p&gt;
+&lt;p&gt;Maybe I’ve not done this enough, maybe you’re rolling your eyes at me now, saying “really, you should know this”.&lt;&#x2F;p&gt;
+&lt;p&gt;I made the stick using the VMware instructions, but found that ESX didn’t boot. First off problems with it not finding some files (&lt;code&gt;menu.c32&lt;&#x2F;code&gt;, &lt;code&gt;mboot.c32&lt;&#x2F;code&gt;), and once I’d persuaded it to find them, &lt;code&gt;loading -c...failed&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Much googling ensued, before finding the gem that solved the problem. I was making the USB stick on a recent Ubuntu install, which was using syslinux v6.something. The useful gem was that anything after some early version of syslinux 4 was not going to work. I got syslinux 3.86 from &lt;a href=&quot;https:&#x2F;&#x2F;www.kernel.org&#x2F;pub&#x2F;linux&#x2F;utils&#x2F;boot&#x2F;syslinux&#x2F;3.xx&#x2F;&quot;&gt;kernel.org&lt;&#x2F;a&gt;. That’s 32 bit, and so poked Ubuntu with a&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;sudo dpkg --add-architecture i386
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;and then&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;sudo apt-get install libc6:i386 libncurses5:i386 libstdc++6:i386
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;I then re-created the stick from scratch and hey presto, all worked well, so I’m putting this here, partly to remind me, and partly so google will index it and hopefully help you if you’re stuck!&lt;&#x2F;p&gt;
+</description>
+      </item>
+    </channel>
+</rss>

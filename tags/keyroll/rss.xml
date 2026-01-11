@@ -1,0 +1,398 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+      <title>Karl&#x27;s Little World - keyroll</title>
+      <link>https://karldyson.github.io/karld-blog-website/</link>
+      <description>...just stuff I thought I should write down and that might be useful to others...</description>
+      <generator>Zola</generator>
+      <language>en</language>
+      <atom:link href="https://karldyson.github.io/karld-blog-website/tags/keyroll/rss.xml" rel="self" type="application/rss+xml"/>
+      <lastBuildDate>Sun, 22 Nov 2020 00:00:00 +0000</lastBuildDate>
+      <item>
+          <title>Automatic Key Rolls</title>
+          <pubDate>Sun, 22 Nov 2020 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://karldyson.github.io/karld-blog-website/posts/automatic-key-rolling/</link>
+          <guid>https://karldyson.github.io/karld-blog-website/posts/automatic-key-rolling/</guid>
+          <description xml:base="https://karldyson.github.io/karld-blog-website/posts/automatic-key-rolling/">&lt;p&gt;I recently moved my test domains onto a separate DNS master so that I could more freely tinker with these domains without risk to my regular stable domains.&lt;&#x2F;p&gt;
+&lt;p&gt;I use catalog zones (maybe this is for another post!) to distribute the zones to save myself the bother of having to configure all the slaves, particularly since I’ve recently started spinning up an experimental anycast network of virtual machines, and so I added a second catalog to my slave servers, and away we went.&lt;&#x2F;p&gt;
+&lt;p&gt;I’m a keen user of debian, and so I built the test master on ‘sid’ so I could run bleeding edge.&lt;&#x2F;p&gt;
+&lt;p&gt;The benefit, primarily, was that whereas Debian 10 gets BIND 9.11.5, sid gets 9.16.8 (at the time of writing) as well as a newer version of openssl, meaning I could sign a zone with algorithm 16, ED448. DS digest algorithm 4 (SHA-384) is also supported.&lt;&#x2F;p&gt;
+&lt;p&gt;The biggy for me, though, and the main driver for having the newer version of BIND, was &lt;code&gt;dnssec-policy;&lt;&#x2F;code&gt; getting BIND to automatically roll your keys.&lt;&#x2F;p&gt;
+&lt;p&gt;I’m not aware of an ability in this version to support either a hook to run a script to interact with your registrar to update a DS record when your KSK rolls, nor an ability to automate CDS or CDNSKEY, but they’ll be coming at some point in the future.&lt;&#x2F;p&gt;
+&lt;p&gt;I decided to test this by auto-rolling my ZSK, so, I added the following to &lt;code&gt;&#x2F;etc&#x2F;bind&#x2F;named.conf.options&lt;&#x2F;code&gt; :&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;dnssec-policy normal {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	dnskey-ttl PT1H;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	keys {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;		ksk lifetime unlimited algorithm ecdsa384;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;		zsk lifetime 90D algorithm ecdsa384;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	};
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	max-zone-ttl P1D;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	parent-ds-ttl P1D;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	parent-propagation-delay PT1H;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	parent-registration-delay P1D;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	publish-safety PT1H;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	retire-safety PT1H;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	signatures-refresh P5D;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	signatures-validity P2W;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	signatures-validity-dnskey P2W;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	zone-propagation-delay PT5M;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;};
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;You don’t need to create initial keys or anything; BIND will do all the key juggling automatically, and will store them wherever you set &lt;code&gt;key-directory&lt;&#x2F;code&gt; to in your &lt;code&gt;options&lt;&#x2F;code&gt; section.&lt;&#x2F;p&gt;
+&lt;p&gt;It doesn’t matter how you add your domains; I use &lt;code&gt;rndc addzone&lt;&#x2F;code&gt; as I have scripts that automate this as well as adding the zone to the catalog (again, that’ll be in another post at some point), the key thing being you just specify the policy in the zone. I’m also using &lt;code&gt;inline-signing;&lt;&#x2F;code&gt; whether you do will depend on your setup. Here’s a sample:&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;zone &amp;quot;some.zone&amp;quot; {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    type master;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    file &amp;quot;&#x2F;path&#x2F;to&#x2F;some.zone.file&amp;quot;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    dnssec-policy &amp;quot;normal&amp;quot;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    inline-signing yes;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;};
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;…and as if by magic, &lt;code&gt;rndc reconfig&lt;&#x2F;code&gt;, and the keyfiles are created, and the zone signed.&lt;&#x2F;p&gt;
+</description>
+      </item>
+      <item>
+          <title>Key Validation</title>
+          <pubDate>Mon, 24 Apr 2017 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://karldyson.github.io/karld-blog-website/posts/validation/</link>
+          <guid>https://karldyson.github.io/karld-blog-website/posts/validation/</guid>
+          <description xml:base="https://karldyson.github.io/karld-blog-website/posts/validation/">&lt;h1 id=&quot;introduction&quot;&gt;Introduction&lt;&#x2F;h1&gt;
+&lt;p&gt;Following on from my post about &lt;a href=&quot;https:&#x2F;&#x2F;karldyson.github.io&#x2F;karld-blog-website&#x2F;posts&#x2F;a-new-key&#x2F;&quot;&gt;the new key being added to the zone&lt;&#x2F;a&gt;, the required 30 days have passed and if your resolver is RFC5011 compliant, it should now trust the key.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;checking&quot;&gt;Checking…&lt;&#x2F;h1&gt;
+&lt;p&gt;You can check this as follows:&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;bind&quot;&gt;BIND&lt;&#x2F;h2&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;$ cat &#x2F;var&#x2F;named&#x2F;managed-keys.bind
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;$ORIGIN .
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;$TTL 0  ; 0 seconds
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;@                       IN SOA  . . (
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                1904       ; serial
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                0          ; refresh (0 seconds)
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                0          ; retry (0 seconds)
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                0          ; expire (0 seconds)
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                0          ; minimum (0 seconds)
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                )
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                        KEYDATA 20170425142612 20170210095625 19700101000000 257 3 8 (
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                AwEAAagAIKlVZrpC6Ia7gEzahOR+9W29euxhJhVVLOyQ
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                bSEW0O8gcCjFFVQUTf6v58fLjwBd0YI0EzrAcQqBGCzh
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                &#x2F;RStIoO8g0NfnfL2MTJRkxoXbfDaUeVPQuYEhg37NZWA
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                JQ9VnMVDxP&#x2F;VHL496M&#x2F;QZxkjf5&#x2F;Efucp2gaDX6RS6CXp
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                oY68LsvPVjR0ZSwzz1apAzvN9dlzEheX7ICJBBtuA6G3
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                LQpzW5hOA2hzCTMjJPJ8LbqF6dsV6DoBQzgul0sGIcGO
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                Yl7OyQdXfZ57relSQageu+ipAdTTJ25AsRTAoub8ONGc
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                LmqrAmRLKBP1dfwhYB4N7knNnulqQxA+Uk1ihz0=
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                ) ; KSK; alg = RSASHA256; key id = 19036
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                ; next refresh: Tue, 25 Apr 2017 14:26:12 GMT
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                ; trusted since: Fri, 10 Feb 2017 09:56:25 GMT
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;2017-03-12.automated-ksk-test.research.icann.org KEYDATA 20170424152612 20170317172529 19700101000000 257 3 8 (
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                AwEAAa9qsSLDI+H0keqE3Yzdr6XuhqhBQVWw5xdgNoWL
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                hE4VxSEIBz9IuCA4w4ssSrClZ59seNc76ltDFcKJv3X9
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                jDjzRtBLjenIgV4n&#x2F;3GpKrAAnRlYbUtpBEdlk4mxoL3B
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                lX8pfLg7RQfTlWaxOUga1+CChcVieFF&#x2F;si&#x2F;eePc9HpZb
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                WxHZRLCAE8dlDa0aa0tfVAZWOnaifpmbTvhDK3tdvMU0
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                tfG2YfsOYcFB9z2KWmCDYwCONNKtls3p6wMwolun1h8I
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                Yo0PF98vqjAp3NVRZvKKdgyF&#x2F;bZ&#x2F;iJtAZFytXvXU6Gwa
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                5tOm1wgP6wuKupscP8KHBluZyOSKw4RMTk6YBdE=
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                ) ; KSK; alg = RSASHA256; key id = 3934
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                ; next refresh: Mon, 24 Apr 2017 15:26:12 GMT
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                ; trusted since: Fri, 17 Mar 2017 17:25:29 GMT
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                        KEYDATA 20170424152612 20170418002534 19700101000000 257 3 8 (
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                AwEAAfUtjasCuLysD4MbjG3v4Kyu0vvVJ&#x2F;0cIreP6flt
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                MeZmwQ5SRta&#x2F;mB+eFVjau+6YKra2UeTKxojBovHH2lZr
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                w7NNejL44&#x2F;Xps4gR3LSVMnCdwras+yvj4en64ghRGWYO
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                uB+Icb0AqrCUhLFWR8yx41UkfaA2vzFnM2xTx0N0+o6R
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                6UciWuwJResomQupOjNUy2ZAi81Y3pb0x3Lw4POjpcSJ
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                zrK4aZ&#x2F;5UPymplqhLEU2DsoQmyFlM5RNTt0YXR8XM4Yw
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                su&#x2F;scxg0u00IF1GC8xcyZUTMc1Rz98AY1VUo5QqUp9Vb
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                Aed5Aw1nNYfjLTj+zOykedgmjms1iNgh9EY111c=
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                ) ; KSK; alg = RSASHA256; key id = 19741
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                ; next refresh: Mon, 24 Apr 2017 15:26:12 GMT
+&lt;&#x2F;span&gt;&lt;mark&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;                                ; trusted since: Tue, 18 Apr 2017 00:25:34 GMT
+&lt;&#x2F;span&gt;&lt;&#x2F;mark&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;We can see in the output above that the new key, keytag 19741, is now trusted.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;unbound&quot;&gt;Unbound&lt;&#x2F;h2&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;$ cat &#x2F;var&#x2F;lib&#x2F;unbound&#x2F;2017-03-12.automated-ksk-test.research.icann.org.ds
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;; autotrust trust anchor file
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;;id: 2017-03-12.automated-ksk-test.research.icann.org. 1
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;;last_queried: 1493044058 ;;Mon Apr 24 14:27:38 2017
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;;last_success: 1493044058 ;;Mon Apr 24 14:27:38 2017
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;;next_probe_time: 1493047519 ;;Mon Apr 24 15:25:19 2017
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;;query_failed: 0
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;;query_interval: 3600
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;;retry_time: 3600
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;2017-03-12.automated-ksk-test.research.icann.org.       60      IN      DNSKEY  257 3 8 AwEAAa9qsSLDI+H0keqE3Yzdr6XuhqhBQVWw5xdgNoWLhE4VxSEIBz9IuCA4w4ssSrClZ59seNc76ltDFcKJv3X9jDjzRtBLjenIgV4n&#x2F;3GpKrAAnRlYbUtpBEdlk4mxoL3BlX8pfLg7RQfTlWaxOUga1+CChcVieFF&#x2F;si&#x2F;eePc9HpZbWxHZRLCAE8dlDa0aa0tfVAZWOnaifpmbTvhDK3tdvMU0tfG2YfsOYcFB9z2KWmCDYwCONNKtls3p6wMwolun1h8IYo0PF98vqjAp3NVRZvKKdgyF&#x2F;bZ&#x2F;iJtAZFytXvXU6Gwa5tOm1wgP6wuKupscP8KHBluZyOSKw4RMTk6YBdE= ;{id = 3934 (ksk), size = 2048b} ;;state=2 [  VALID  ] ;;count=0 ;;lastchange=1489997718 ;;Mon Mar 20 08:15:18 2017
+&lt;&#x2F;span&gt;&lt;mark&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;2017-03-12.automated-ksk-test.research.icann.org.       60      IN      DNSKEY  257 3 8 AwEAAfUtjasCuLysD4MbjG3v4Kyu0vvVJ&#x2F;0cIreP6fltMeZmwQ5SRta&#x2F;mB+eFVjau+6YKra2UeTKxojBovHH2lZrw7NNejL44&#x2F;Xps4gR3LSVMnCdwras+yvj4en64ghRGWYOuB+Icb0AqrCUhLFWR8yx41UkfaA2vzFnM2xTx0N0+o6R6UciWuwJResomQupOjNUy2ZAi81Y3pb0x3Lw4POjpcSJzrK4aZ&#x2F;5UPymplqhLEU2DsoQmyFlM5RNTt0YXR8XM4Ywsu&#x2F;scxg0u00IF1GC8xcyZUTMc1Rz98AY1VUo5QqUp9VbAed5Aw1nNYfjLTj+zOykedgmjms1iNgh9EY111c= ;{id = 19741 (ksk), size = 2048b} ;;state=2 [  VALID  ] ;;count=0 ;;lastchange=1492590342 ;;Wed Apr 19 08:25:42 2017
+&lt;&#x2F;span&gt;&lt;&#x2F;mark&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Similarly, for Unbound, we can see above that the status is now &lt;mark&gt;VALID&lt;&#x2F;mark&gt;.&lt;&#x2F;p&gt;
+</description>
+      </item>
+      <item>
+          <title>A New Key...</title>
+          <pubDate>Tue, 21 Mar 2017 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://karldyson.github.io/karld-blog-website/posts/a-new-key/</link>
+          <guid>https://karldyson.github.io/karld-blog-website/posts/a-new-key/</guid>
+          <description xml:base="https://karldyson.github.io/karld-blog-website/posts/a-new-key/">&lt;h1 id=&quot;introduction&quot;&gt;Introduction&lt;&#x2F;h1&gt;
+&lt;p&gt;Further to my post on &lt;a href=&quot;https:&#x2F;&#x2F;karldyson.github.io&#x2F;karld-blog-website&#x2F;posts&#x2F;rolling-rolling-rolling&#x2F;&quot;&gt;ICANN’s automated KSK testlab&lt;&#x2F;a&gt;, ICANN generated a new key on the 19th, and added it to the test zone that we’re using, and we can see it below:&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;the-new-key&quot;&gt;The New Key&lt;&#x2F;h1&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;$ dig +multiline @::1 2017-03-12.automated-ksk-test.research.icann.org dnskey
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;; &amp;lt;&amp;lt;&amp;gt;&amp;gt; DiG 9.9.5-9+deb8u6-Debian &amp;lt;&amp;lt;&amp;gt;&amp;gt; +multiline @::1 2017-03-12.automated-ksk-test.research.icann.org dnskey
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;; (1 server found)
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;; global options: +cmd
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;; Got answer:
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;; -&amp;gt;&amp;gt;HEADER&amp;lt;&amp;lt;- opcode: QUERY, status: NOERROR, id: 36605
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;; flags: qr rd ra ad; QUERY: 1, ANSWER: 3, AUTHORITY: 0, ADDITIONAL: 1
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;; OPT PSEUDOSECTION:
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;; EDNS: version: 0, flags:; udp: 4096
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;; QUESTION SECTION:
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;2017-03-12.automated-ksk-test.research.icann.org. IN DNSKEY
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;; ANSWER SECTION:
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;2017-03-12.automated-ksk-test.research.icann.org. 60 IN	DNSKEY 257 3 8 (
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				AwEAAa9qsSLDI+H0keqE3Yzdr6XuhqhBQVWw5xdgNoWL
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				hE4VxSEIBz9IuCA4w4ssSrClZ59seNc76ltDFcKJv3X9
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				jDjzRtBLjenIgV4n&#x2F;3GpKrAAnRlYbUtpBEdlk4mxoL3B
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				lX8pfLg7RQfTlWaxOUga1+CChcVieFF&#x2F;si&#x2F;eePc9HpZb
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				WxHZRLCAE8dlDa0aa0tfVAZWOnaifpmbTvhDK3tdvMU0
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				tfG2YfsOYcFB9z2KWmCDYwCONNKtls3p6wMwolun1h8I
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				Yo0PF98vqjAp3NVRZvKKdgyF&#x2F;bZ&#x2F;iJtAZFytXvXU6Gwa
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				5tOm1wgP6wuKupscP8KHBluZyOSKw4RMTk6YBdE=
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				) ; KSK; alg = RSASHA256; key id = 3934
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;2017-03-12.automated-ksk-test.research.icann.org. 60 IN	DNSKEY 256 3 8 (
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				AwEAAbqImB5UsfE5J&#x2F;sx3L3uQxjSY5HIPjrlTFKA+cxE
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				R8SmU1wWGo21nrNBm3pOIYoC3zhiaCq1Jo6XrTcg+In+
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				62g7PeXBO+2QBoHzCBxqbFMPoGpHph7D&#x2F;OebWOvw5Akz
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				MFqus2&#x2F;JxZtvJOgkBws1EbzOw&#x2F;lKbJUZVStUiCOZ8wFP
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				Xd3X7nQMjVTOu6Cb2uGAVrgBRsARo+2CdcXNEtzNTHU1
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				c+VxH9G&#x2F;t&#x2F;2VCrueDmr&#x2F;epUP1adkyNUmXoYaG3eMrdGr
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				ml8Dr7OMrt40vlWFp6i3TxltDXG&#x2F;navXdEmL&#x2F;w6f+pA6
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				Dt9KVw&#x2F;iEUxB08+4VY6jMkxfWJAD6t5XwCVcKH8=
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				) ; ZSK; alg = RSASHA256; key id = 19401
+&lt;&#x2F;span&gt;&lt;mark&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;2017-03-12.automated-ksk-test.research.icann.org. 60 IN	DNSKEY 257 3 8 (
+&lt;&#x2F;span&gt;&lt;&#x2F;mark&gt;&lt;mark&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				AwEAAfUtjasCuLysD4MbjG3v4Kyu0vvVJ&#x2F;0cIreP6flt
+&lt;&#x2F;span&gt;&lt;&#x2F;mark&gt;&lt;mark&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				MeZmwQ5SRta&#x2F;mB+eFVjau+6YKra2UeTKxojBovHH2lZr
+&lt;&#x2F;span&gt;&lt;&#x2F;mark&gt;&lt;mark&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				w7NNejL44&#x2F;Xps4gR3LSVMnCdwras+yvj4en64ghRGWYO
+&lt;&#x2F;span&gt;&lt;&#x2F;mark&gt;&lt;mark&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				uB+Icb0AqrCUhLFWR8yx41UkfaA2vzFnM2xTx0N0+o6R
+&lt;&#x2F;span&gt;&lt;&#x2F;mark&gt;&lt;mark&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				6UciWuwJResomQupOjNUy2ZAi81Y3pb0x3Lw4POjpcSJ
+&lt;&#x2F;span&gt;&lt;&#x2F;mark&gt;&lt;mark&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				zrK4aZ&#x2F;5UPymplqhLEU2DsoQmyFlM5RNTt0YXR8XM4Yw
+&lt;&#x2F;span&gt;&lt;&#x2F;mark&gt;&lt;mark&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				su&#x2F;scxg0u00IF1GC8xcyZUTMc1Rz98AY1VUo5QqUp9Vb
+&lt;&#x2F;span&gt;&lt;&#x2F;mark&gt;&lt;mark&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				Aed5Aw1nNYfjLTj+zOykedgmjms1iNgh9EY111c=
+&lt;&#x2F;span&gt;&lt;&#x2F;mark&gt;&lt;mark&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				) ; KSK; alg = RSASHA256; key id = 19741
+&lt;&#x2F;span&gt;&lt;&#x2F;mark&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;; Query time: 285 msec
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;; SERVER: ::1#53(::1)
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;; WHEN: Tue Mar 21 20:17:12 GMT 2017
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;; MSG SIZE  rcvd: 905
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h1 id=&quot;troubleshooting&quot;&gt;Troubleshooting&lt;&#x2F;h1&gt;
+&lt;p&gt;Key &lt;mark&gt;19741&lt;&#x2F;mark&gt; is a new KSK in the zone.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;bind9&quot;&gt;BIND9&lt;&#x2F;h2&gt;
+&lt;p&gt;If you look in &lt;code&gt;managed-keys.bind&lt;&#x2F;code&gt; (I’m running Debian, and so that’s in &lt;code&gt;&#x2F;var&#x2F;cache&#x2F;bind&#x2F;&lt;&#x2F;code&gt;) you’ll now see the new key is visible while BIND is observing the new key. RFC5011 defines the period that the resolver must observe the new key for as either at least two times the TTL of the keyset containing the new key, or 30 days; whichever is the longer.&lt;&#x2F;p&gt;
+&lt;p&gt;I’m cheating, slightly, and taking a look at &lt;code&gt;managed-keys.bind&lt;&#x2F;code&gt; from a different server, because my Debian box is running BIND 9.9.5, whereas I have access to a 9.11 box; you’ll see why below:&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;$ cat &#x2F;var&#x2F;named&#x2F;managed-keys.bind
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;$ORIGIN .
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;$TTL 0	; 0 seconds
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;@			IN SOA	. . (
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				284        ; serial
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				0          ; refresh (0 seconds)
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				0          ; retry (0 seconds)
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				0          ; expire (0 seconds)
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				0          ; minimum (0 seconds)
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				)
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;			KEYDATA	20170322222551 20170210095625 19700101000000 257 3 8 (
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				AwEAAagAIKlVZrpC6Ia7gEzahOR+9W29euxhJhVVLOyQ
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				bSEW0O8gcCjFFVQUTf6v58fLjwBd0YI0EzrAcQqBGCzh
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				&#x2F;RStIoO8g0NfnfL2MTJRkxoXbfDaUeVPQuYEhg37NZWA
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				JQ9VnMVDxP&#x2F;VHL496M&#x2F;QZxkjf5&#x2F;Efucp2gaDX6RS6CXp
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				oY68LsvPVjR0ZSwzz1apAzvN9dlzEheX7ICJBBtuA6G3
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				LQpzW5hOA2hzCTMjJPJ8LbqF6dsV6DoBQzgul0sGIcGO
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				Yl7OyQdXfZ57relSQageu+ipAdTTJ25AsRTAoub8ONGc
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				LmqrAmRLKBP1dfwhYB4N7knNnulqQxA+Uk1ihz0=
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				) ; KSK; alg = RSASHA256; key id = 19036
+&lt;&#x2F;span&gt;&lt;mark&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				; next refresh: Wed, 22 Mar 2017 22:25:51 GMT
+&lt;&#x2F;span&gt;&lt;&#x2F;mark&gt;&lt;mark&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				; trusted since: Fri, 10 Feb 2017 09:56:25 GMT
+&lt;&#x2F;span&gt;&lt;&#x2F;mark&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;2017-03-12.automated-ksk-test.research.icann.org KEYDATA 20170321232551 20170317172529 19700101000000 257 3 8 (
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				AwEAAa9qsSLDI+H0keqE3Yzdr6XuhqhBQVWw5xdgNoWL
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				hE4VxSEIBz9IuCA4w4ssSrClZ59seNc76ltDFcKJv3X9
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				jDjzRtBLjenIgV4n&#x2F;3GpKrAAnRlYbUtpBEdlk4mxoL3B
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				lX8pfLg7RQfTlWaxOUga1+CChcVieFF&#x2F;si&#x2F;eePc9HpZb
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				WxHZRLCAE8dlDa0aa0tfVAZWOnaifpmbTvhDK3tdvMU0
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				tfG2YfsOYcFB9z2KWmCDYwCONNKtls3p6wMwolun1h8I
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				Yo0PF98vqjAp3NVRZvKKdgyF&#x2F;bZ&#x2F;iJtAZFytXvXU6Gwa
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				5tOm1wgP6wuKupscP8KHBluZyOSKw4RMTk6YBdE=
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				) ; KSK; alg = RSASHA256; key id = 3934
+&lt;&#x2F;span&gt;&lt;mark&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				; next refresh: Tue, 21 Mar 2017 23:25:51 GMT
+&lt;&#x2F;span&gt;&lt;&#x2F;mark&gt;&lt;mark&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				; trusted since: Fri, 17 Mar 2017 17:25:29 GMT
+&lt;&#x2F;span&gt;&lt;&#x2F;mark&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;			KEYDATA	20170321232551 20170418002534 19700101000000 257 3 8 (
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				AwEAAfUtjasCuLysD4MbjG3v4Kyu0vvVJ&#x2F;0cIreP6flt
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				MeZmwQ5SRta&#x2F;mB+eFVjau+6YKra2UeTKxojBovHH2lZr
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				w7NNejL44&#x2F;Xps4gR3LSVMnCdwras+yvj4en64ghRGWYO
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				uB+Icb0AqrCUhLFWR8yx41UkfaA2vzFnM2xTx0N0+o6R
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				6UciWuwJResomQupOjNUy2ZAi81Y3pb0x3Lw4POjpcSJ
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				zrK4aZ&#x2F;5UPymplqhLEU2DsoQmyFlM5RNTt0YXR8XM4Yw
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				su&#x2F;scxg0u00IF1GC8xcyZUTMc1Rz98AY1VUo5QqUp9Vb
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				Aed5Aw1nNYfjLTj+zOykedgmjms1iNgh9EY111c=
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				) ; KSK; alg = RSASHA256; key id = 19741
+&lt;&#x2F;span&gt;&lt;mark&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				; next refresh: Tue, 21 Mar 2017 23:25:51 GMT
+&lt;&#x2F;span&gt;&lt;&#x2F;mark&gt;&lt;mark&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;				; trust pending: Tue, 18 Apr 2017 00:25:34 GMT
+&lt;&#x2F;span&gt;&lt;&#x2F;mark&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;On my 9.9.5 server, I don’t have the helpful comments. We can see, helpfully, that the root key (19036), and our original testlab key (3934) are trusted. We can also see that the server observing key 19741 because the instead of trusted since we can see trust pending.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;unbound&quot;&gt;Unbound&lt;&#x2F;h2&gt;
+&lt;p&gt;If you remember from the original post, whereas BIND keeps a track in &lt;code&gt;managed-keys.bind&lt;&#x2F;code&gt;, Unbound tracks the metadata in the external file we specified with &lt;code&gt;auto-trust-anchor-file:&lt;&#x2F;code&gt;. The file has been updated in a similar way to BIND’s:&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;$ cat &#x2F;var&#x2F;lib&#x2F;unbound&#x2F;2017-03-12.automated-ksk-test.research.icann.org.ds
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;; autotrust trust anchor file
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;;id: 2017-03-12.automated-ksk-test.research.icann.org. 1
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;;last_queried: 1490135144 ;;Tue Mar 21 22:25:44 2017
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;;last_success: 1490135144 ;;Tue Mar 21 22:25:44 2017
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;;next_probe_time: 1490138421 ;;Tue Mar 21 23:20:21 2017
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;;query_failed: 0
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;;query_interval: 3600
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;;retry_time: 3600
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;2017-03-12.automated-ksk-test.research.icann.org.	60	IN	DNSKEY	257 3 8
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;AwEAAa9qsSLDI+H0keqE3Yzdr6XuhqhBQVWw5xdgNoWLhE4VxSEIBz9IuCA4w4ssSrClZ59seNc76ltDFcKJv3X
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;9jDjzRtBLjenIgV4n&#x2F;3GpKrAAnRlYbUtpBEdlk4mxoL3BlX8pfLg7RQfTlWaxOUga1+CChcVieFF&#x2F;si&#x2F;eePc9Hp
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;ZbWxHZRLCAE8dlDa0aa0tfVAZWOnaifpmbTvhDK3tdvMU0tfG2YfsOYcFB9z2KWmCDYwCONNKtls3p6wMwolun1
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;h8IYo0PF98vqjAp3NVRZvKKdgyF&#x2F;bZ&#x2F;iJtAZFytXvXU6Gwa5tOm1wgP6wuKupscP8KHBluZyOSKw4RMTk6YBdE=
+&lt;&#x2F;span&gt;&lt;mark&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;{id = 3934 (ksk), size = 2048b} ;;state=2 [  VALID  ] ;;count=0 ;;lastchange=1489997718 ;;Mon Mar 20 08:15:18 2017
+&lt;&#x2F;span&gt;&lt;&#x2F;mark&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;2017-03-12.automated-ksk-test.research.icann.org.	60	IN	DNSKEY	257 3 8
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;AwEAAfUtjasCuLysD4MbjG3v4Kyu0vvVJ&#x2F;0cIreP6fltMeZmwQ5SRta&#x2F;mB+eFVjau+6YKra2UeTKxojBovHH2lZ
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;rw7NNejL44&#x2F;Xps4gR3LSVMnCdwras+yvj4en64ghRGWYOuB+Icb0AqrCUhLFWR8yx41UkfaA2vzFnM2xTx0N0+o
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;6R6UciWuwJResomQupOjNUy2ZAi81Y3pb0x3Lw4POjpcSJzrK4aZ&#x2F;5UPymplqhLEU2DsoQmyFlM5RNTt0YXR8XM
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;4Ywsu&#x2F;scxg0u00IF1GC8xcyZUTMc1Rz98AY1VUo5QqUp9VbAed5Aw1nNYfjLTj+zOykedgmjms1iNgh9EY111c=
+&lt;&#x2F;span&gt;&lt;mark&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;{id = 19741 (ksk), size = 2048b} ;;state=1 [ ADDPEND ] ;;count=34 ;;lastchange=1489997718 ;;Mon Mar 20 08:15:18 2017
+&lt;&#x2F;span&gt;&lt;&#x2F;mark&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;In line 15, we see the original key (3934) with a status of &lt;mark&gt;VALID&lt;&#x2F;mark&gt;, whereas in line 22 we see the newly spotted key 19741 is &lt;mark&gt;ADDPEND&lt;&#x2F;mark&gt;.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;what-s-next&quot;&gt;What’s next…?&lt;&#x2F;h1&gt;
+&lt;p&gt;Now we wait; 30 days, and as long as the key is observed throughout, the key should become trusted at the end of this…&lt;&#x2F;p&gt;
+</description>
+      </item>
+      <item>
+          <title>Rolling, Rolling, Rolling...</title>
+          <pubDate>Fri, 17 Mar 2017 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://karldyson.github.io/karld-blog-website/posts/rolling-rolling-rolling/</link>
+          <guid>https://karldyson.github.io/karld-blog-website/posts/rolling-rolling-rolling/</guid>
+          <description xml:base="https://karldyson.github.io/karld-blog-website/posts/rolling-rolling-rolling/">&lt;h1 id=&quot;introduction&quot;&gt;Introduction&lt;&#x2F;h1&gt;
+&lt;p&gt;In October 2017, ICANN are going to roll the key signing key in the root of the DNS.&lt;&#x2F;p&gt;
+&lt;p&gt;If you’re not technical and don’t know what I just said, this post isn’t for you.&lt;&#x2F;p&gt;
+&lt;p&gt;If, however, you run a validating recursive resolver, read on…&lt;&#x2F;p&gt;
+&lt;p&gt;In October (the 11th to be exact), the key will roll and you’ll need to have done one of two things…&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;Update your root trust anchor manually&lt;&#x2F;li&gt;
+&lt;li&gt;Check your resolver is RFC5011 compliant.&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;But first, a little…&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;background&quot;&gt;Background…&lt;&#x2F;h1&gt;
+&lt;p&gt;So you know how DNSSEC works…&lt;&#x2F;p&gt;
+&lt;p&gt;…you sign a zone. More specifically, you generate two keys, a key to sign the zone (ZSK), and a key to sign the keys (KSK). The zone gets bigger because for each record set, a signature is generated and added (RRSIG records). The public part of the keyset is also added to the zone (DNSKEY records). Some form of proof of non-existance is added (NSEC or NSEC3).&lt;&#x2F;p&gt;
+&lt;p&gt;Next, once the keys and signatures have made it to all of the nameservers for the zone, you generate a delegated signer record (DS) from the KSK, and you publish that in the parent. The parent then signs the DS record, and hey presto, your chain of trust is made.&lt;&#x2F;p&gt;
+&lt;p&gt;So, where’s the DS record for the root…?&lt;&#x2F;p&gt;
+&lt;p&gt;To make this chain of trust work, resolvers that want to validate the DNSSEC chain of trust need a starting point in the root…&lt;&#x2F;p&gt;
+&lt;p&gt;Your resolver has a trust anchor for the root. Depending on what you’re using for a resolver, this will either be the DS of the root KSK, or the public part of the KSK.&lt;&#x2F;p&gt;
+&lt;p&gt;Your resolver will have this built in, but then, if configured correctly, will use an automatic mechanism to keep that key up to date and roll it when required.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;rfc5011&quot;&gt;RFC5011&lt;&#x2F;h1&gt;
+&lt;p&gt;RFC5011 defines how a resolver can automatically update a trust anchor for a zone.&lt;&#x2F;p&gt;
+&lt;p&gt;So that you can check whether your resolver will follow this process, ICANN have an automated testbed for the KSK roll, which I encourage you to look at.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;icann-s-automated-test&quot;&gt;ICANN’s Automated Test&lt;&#x2F;h1&gt;
+&lt;p&gt;Each week, they create a new zone, and they sign it with a set of newly generated keys. Purposefully broken DS records are published in the parent zone, so that a normal validating resolver will SERVFAIL (because validation fails).&lt;&#x2F;p&gt;
+&lt;p&gt;By adding a trust anchor to your resolver, the zone will validate.&lt;&#x2F;p&gt;
+&lt;p&gt;If correctly configured, your resolver will now look for new key signing keys, and will observe them, and use them as per RFC5011.&lt;&#x2F;p&gt;
+&lt;p&gt;So, lets take a look at this. Before I add a trust anchor, I can check that the zone doesn’t validate:&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;$ dig @::1 2017-03-12.automated-ksk-test.research.icann.org soa
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;; &amp;lt;&amp;lt;&amp;gt;&amp;gt; DiG 9.9.5-9+deb8u6-Debian &amp;lt;&amp;lt;&amp;gt;&amp;gt; @::1 2017-03-12.automated-ksk-test.research.icann.org soa
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;; (1 server found)
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;; global options: +cmd
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;; Got answer:
+&lt;&#x2F;span&gt;&lt;mark&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;; -&amp;gt;&amp;gt;HEADER&amp;lt;&amp;lt;- opcode: QUERY, status: SERVFAIL, id: 39100
+&lt;&#x2F;span&gt;&lt;&#x2F;mark&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;; flags: qr rd ra; QUERY: 1, ANSWER: 0, AUTHORITY: 0, ADDITIONAL: 1
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;; OPT PSEUDOSECTION:
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;; EDNS: version: 0, flags:; udp: 4096
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;; QUESTION SECTION:
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;2017-03-12.automated-ksk-test.research.icann.org. IN SOA
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;; Query time: 1908 msec
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;; SERVER: ::1#53(::1)
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;; WHEN: Mon Mar 20 13:22:57 GMT 2017
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;; MSG SIZE  rcvd: 77
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;We can see in line 7, that we have a &lt;mark&gt;SERVFAIL&lt;&#x2F;mark&gt; response.&lt;&#x2F;p&gt;
+&lt;p&gt;This server is running BIND. So, first we check that the server is configured manage keys using RFC5011:&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;options {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    ...
+&lt;&#x2F;span&gt;&lt;mark&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    dnssec-validation auto;
+&lt;&#x2F;span&gt;&lt;&#x2F;mark&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    ...
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;};
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;If you’re just adding this, don’t forget to &lt;code&gt;rndc reconfig&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;trust-anchor&quot;&gt;Trust Anchor&lt;&#x2F;h1&gt;
+&lt;p&gt;Now, we need to add a trust anchor:&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;bind&quot;&gt;BIND&lt;&#x2F;h1&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;managed-keys {
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;  2017-03-12.automated-ksk-test.research.icann.org initial-key 257 3 8
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;  &amp;quot;AwEAAa9qsSLDI+H0keqE3Yzdr6XuhqhBQVWw5xdgNoWLhE4VxSEIBz9I
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;  uCA4w4ssSrClZ59seNc76ltDFcKJv3X9jDjzRtBLjenIgV4n&#x2F;3GpKrAA
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;  nRlYbUtpBEdlk4mxoL3BlX8pfLg7RQfTlWaxOUga1+CChcVieFF&#x2F;si&#x2F;e
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;  ePc9HpZbWxHZRLCAE8dlDa0aa0tfVAZWOnaifpmbTvhDK3tdvMU0tfG2
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;  YfsOYcFB9z2KWmCDYwCONNKtls3p6wMwolun1h8IYo0PF98vqjAp3NVR
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;  ZvKKdgyF&#x2F;bZ&#x2F;iJtAZFytXvXU6Gwa5tOm1wgP6wuKupscP8KHBluZyOSK
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;  w4RMTk6YBdE=&amp;quot;;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;};
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;This is added in your &lt;code&gt;named.conf&lt;&#x2F;code&gt; file.&lt;&#x2F;p&gt;
+&lt;p&gt;Once again, don’t forget to &lt;code&gt;rndc reconfig&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;unbound&quot;&gt;Unbound&lt;&#x2F;h1&gt;
+&lt;p&gt;If you’re running Unbound, then you can add the DNSKEY or DS records to a file in a location that Unbound can read and write to (so, somewhere like &lt;code&gt;&#x2F;var&#x2F;lib&#x2F;unbound&#x2F;&lt;&#x2F;code&gt; and then add a &lt;code&gt;auto-trust-anchor-file&lt;&#x2F;code&gt; line in the &lt;code&gt;server:&lt;&#x2F;code&gt; section of your &lt;code&gt;unbound.conf&lt;&#x2F;code&gt; file.&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;cat &#x2F;var&#x2F;lib&#x2F;unbound&#x2F;2017-03-12.automated-ksk-test.research.icann.org.ds
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;2017-03-12.automated-ksk-test.research.icann.org. IN DS 3934 8 1 47AA8AAF4D75B3D9C58448F241F793EBC4977821
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;2017-03-12.automated-ksk-test.research.icann.org. IN DS 3934 8 2 0D27F2E6EA9CA548F1896A71FB07CED86074D3462F2A720D6177F3C5CEC15F0D
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;Note; the file doesn’t look like this once you’ve told Unbound about it, as it uses the file to store metadata related to the RFC5011 process.&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;server:
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    ...
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    auto-trust-anchor-file: &amp;quot;&#x2F;var&#x2F;lib&#x2F;unbound&#x2F;2017-03-12.automated-ksk-test.research.icann.org.ds&amp;quot;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    ...
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;After adding those, you’ll want to &lt;code&gt;unbound-control reload&lt;&#x2F;code&gt; to pick up the changes.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;testing&quot;&gt;Testing&lt;&#x2F;h1&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;$ dig @::1 2017-03-12.automated-ksk-test.research.icann.org soa
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;; &amp;lt;&amp;lt;&amp;gt;&amp;gt; DiG 9.9.5-9+deb8u6-Debian &amp;lt;&amp;lt;&amp;gt;&amp;gt; @::1 2017-03-12.automated-ksk-test.research.icann.org soa
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;; (1 server found)
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;; global options: +cmd
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;; Got answer:
+&lt;&#x2F;span&gt;&lt;mark&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;; -&amp;gt;&amp;gt;HEADER&amp;lt;&amp;lt;- opcode: QUERY, status: NOERROR, id: 30413
+&lt;&#x2F;span&gt;&lt;&#x2F;mark&gt;&lt;mark&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;; flags: qr rd ra ad; QUERY: 1, ANSWER: 1, AUTHORITY: 2, ADDITIONAL: 3
+&lt;&#x2F;span&gt;&lt;&#x2F;mark&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;; OPT PSEUDOSECTION:
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;; EDNS: version: 0, flags:; udp: 4096
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;; QUESTION SECTION:
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;2017-03-12.automated-ksk-test.research.icann.org. IN SOA
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;; ANSWER SECTION:
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;2017-03-12.automated-ksk-test.research.icann.org. 60 IN	SOA ns1.research.icann.org. automated-ksk-test.research.icann.org. 1489968062 3600 600 86400 60
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;; AUTHORITY SECTION:
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;2017-03-12.automated-ksk-test.research.icann.org. 60 IN	NS ns2.research.icann.org.
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;2017-03-12.automated-ksk-test.research.icann.org. 60 IN	NS ns1.research.icann.org.
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;; ADDITIONAL SECTION:
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;ns1.research.icann.org.	3600	IN	A	192.0.34.56
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;ns2.research.icann.org.	3600	IN	A	192.0.45.56
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;; Query time: 428 msec
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;; SERVER: ::1#53(::1)
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;; WHEN: Mon Mar 20 13:44:24 GMT 2017
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;;; MSG SIZE  rcvd: 181
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;This time, we can see that on line 7, we have a &lt;mark&gt;NOERROR&lt;&#x2F;mark&gt; response, and on line 8, we can see that we have &lt;mark&gt;ad&lt;&#x2F;mark&gt; in the &lt;code&gt;flags&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;what-s-next&quot;&gt;What’s next…&lt;&#x2F;h1&gt;
+&lt;p&gt;Now, we wait. The next step is that ICANN’s automated test lab will generate and publish a new KSK into the zone on the 19th.&lt;&#x2F;p&gt;
+</description>
+      </item>
+    </channel>
+</rss>

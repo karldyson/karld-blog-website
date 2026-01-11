@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+      <title>Karl&#x27;s Little World - tcp</title>
+      <link>https://karldyson.github.io/karld-blog-website/</link>
+      <description>...just stuff I thought I should write down and that might be useful to others...</description>
+      <generator>Zola</generator>
+      <language>en</language>
+      <atom:link href="https://karldyson.github.io/karld-blog-website/tags/tcp/rss.xml" rel="self" type="application/rss+xml"/>
+      <lastBuildDate>Fri, 20 Aug 2010 00:00:00 +0000</lastBuildDate>
+      <item>
+          <title>DNSSEC BIND9 Configuration Summary and Cool Stuff</title>
+          <pubDate>Fri, 20 Aug 2010 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://karldyson.github.io/karld-blog-website/posts/dnssec-bind-configuration-summary/</link>
+          <guid>https://karldyson.github.io/karld-blog-website/posts/dnssec-bind-configuration-summary/</guid>
+          <description xml:base="https://karldyson.github.io/karld-blog-website/posts/dnssec-bind-configuration-summary/">&lt;h1 id=&quot;introduction&quot;&gt;Introduction&lt;&#x2F;h1&gt;
+&lt;p&gt;With the recent signing of the root, I’ve discovered a sudden interest in DNSSEC, and decided to have a go myself to aid my understanding of it.&lt;&#x2F;p&gt;
+&lt;p&gt;This article is written as an aid-memoir to me, and summary of the bits I’ve read. Of course, I’ve provided links to the whole blog entries I found the information in, in case you want to read more than I’ve written.&lt;&#x2F;p&gt;
+&lt;p&gt;Whilst the root is signed, only certain TLDs are signed, and so if you want the full chain of trust experience, you want a domain with a signed TLD.&lt;&#x2F;p&gt;
+&lt;p&gt;At the moment, &lt;code&gt;.uk&lt;&#x2F;code&gt; is signed, but &lt;code&gt;.co.uk&lt;&#x2F;code&gt; etc are not, so that rules them out. &lt;code&gt;.net&lt;&#x2F;code&gt; is scheduled for around Nov 2010, and &lt;code&gt;.com&lt;&#x2F;code&gt; sometime around March 2011.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;.org&lt;&#x2F;code&gt;, however, is already signed, and so I thought I’d grab one to play with.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;not-all-registrars-are-equal&quot;&gt;Not All Registrars Are Equal&lt;&#x2F;h1&gt;
+&lt;p&gt;I used my regular registrar, and registered &lt;code&gt;karldyson.org&lt;&#x2F;code&gt; to go with my collection of &lt;code&gt;.com&lt;&#x2F;code&gt; and &lt;code&gt;.co.uk&lt;&#x2F;code&gt; versions.&lt;&#x2F;p&gt;
+&lt;p&gt;This was my first sticking point, because their upstream (Tucows) aren’t accredited for DNSSEC yet (and, it would appear, have no plans on doing so).&lt;&#x2F;p&gt;
+&lt;p&gt;I’d need my domain to be with a registrar that is accredited.&lt;&#x2F;p&gt;
+&lt;p&gt;My registrar helpfully supplied me with a list of registrars that are, so I could choose one and either register a domain there, or move my new one.&lt;&#x2F;p&gt;
+&lt;p&gt;I registered another .org to add to another set, this time with GoDaddy. They’re on the list.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;signing-the-zone&quot;&gt;Signing The Zone&lt;&#x2F;h1&gt;
+&lt;p&gt;I had told GoDaddy that I wanted to use my own nameservers during sign up, and so after creating a regular zonefile for bind, I had a look through the blog entry I found at &lt;a href=&quot;http:&#x2F;&#x2F;clayshek.wordpress.com&#x2F;2009&#x2F;01&#x2F;13&#x2F;enabling-dnssec-on-bind&#x2F;&quot;&gt;http:&#x2F;&#x2F;clayshek.wordpress.com&#x2F;2009&#x2F;01&#x2F;13&#x2F;enabling-dnssec-on-bind&#x2F;&lt;&#x2F;a&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Essentially, the steps are (all completed whilst IN the zonefile directory):&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;Generate a zone signing key (ZSK) :&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;code&gt;dnssec-keygen -a RSASHA1 -b 1024 -n ZONE example.org&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;ul&gt;
+&lt;li&gt;Generate a key signing key:&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;code&gt;dnssec-keygen -a RSASHA1 -b 2048 -n ZONE -f KSK example.org&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;ul&gt;
+&lt;li&gt;Concatenate the created public keys into the zone file:&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;code&gt;cat Kexample.org+*.key &amp;gt;&amp;gt; example.org&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;ul&gt;
+&lt;li&gt;Sign any child zones first:&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;code&gt;dnssec-signzone -N INCREMENT child.example.org&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;ul&gt;
+&lt;li&gt;Concatenate the DS records for the child into the parent zone:&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;code&gt;cat dsset-child.example.org &amp;gt;&amp;gt; example.org&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;ul&gt;
+&lt;li&gt;Sign the zone:&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;blockquote&gt;
+&lt;p&gt;&lt;code&gt;dnssec-signzone -N INCREMENT example.org&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;Generating the ZSK and KSK took ages on my Atom 330 dedicated server, and so I can recommend a good book, or some other talk while you wait for this to finish!&lt;&#x2F;p&gt;
+&lt;p&gt;Like the child zone signing, you will get DS records for the parent zone. These need to be supplied to your registrar to maintain the chain of trust. GoDaddy has a nice interface for submitting these, you just need to know what the different bits of the DS records are. They’re detailed in &lt;a href=&quot;https:&#x2F;&#x2F;datatracker.ietf.org&#x2F;doc&#x2F;html&#x2F;rfc4034&quot;&gt;RFC4034&lt;&#x2F;a&gt; but to save you some time, and sanity….&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;your-ds-records&quot;&gt;Your DS Records&lt;&#x2F;h1&gt;
+&lt;p&gt;&lt;code&gt;example.org. 86400 IN DS 60485 5 1 2BB183AF5F22588179A53B0A98631FAD1A292118&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;The first four text fields specify the:&lt;&#x2F;p&gt;
+&lt;ol&gt;
+&lt;li&gt;name &lt;code&gt;example.org.&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;TTL &lt;code&gt;86400&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;Class &lt;code&gt;IN&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;li&gt;RR type &lt;code&gt;DS&lt;&#x2F;code&gt;&lt;&#x2F;li&gt;
+&lt;&#x2F;ol&gt;
+&lt;p&gt;Value &lt;code&gt;60485&lt;&#x2F;code&gt; is the key tag for the corresponding &lt;code&gt;example.org.&lt;&#x2F;code&gt; &lt;kbd&gt;DNSKEY&lt;&#x2F;kbd&gt; RR&lt;&#x2F;p&gt;
+&lt;p&gt;Value 5 denotes the algorithm used by this &lt;code&gt;example.org.&lt;&#x2F;code&gt; &lt;kbd&gt;DNSKEY&lt;&#x2F;kbd&gt; RR.&lt;&#x2F;p&gt;
+&lt;p&gt;Value 1 is the algorithm used to construct the digest.&lt;&#x2F;p&gt;
+&lt;p&gt;The rest of the RDATA text is the digest in hexadecimal.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;your-caching-resolver&quot;&gt;Your Caching Resolver&lt;&#x2F;h1&gt;
+&lt;p&gt;Your caching resolver will need DNSSEC enabled for queries. I added the following to my bind server’s options section:&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;dnssec-enable yes;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;dnssec-validation yes;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h1 id=&quot;your-system-resolver&quot;&gt;Your System Resolver&lt;&#x2F;h1&gt;
+&lt;p&gt;With your local system pointed at your caching resolver, it would appear you’ll need &lt;mark&gt;EDNS0&lt;&#x2F;mark&gt; enabled. This is achieved by adding the following option to your &lt;code&gt;&#x2F;etc&#x2F;resolv.conf&lt;&#x2F;code&gt;.&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;options edns0
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;This appears to be supported on newer versions of &lt;code&gt;libresolv&lt;&#x2F;code&gt; - my Debian 5 system doesn’t appear to support it, whereas my Ubuntu 10.04 system does.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;so-on-to-the-cool-stuff-ssh&quot;&gt;So, on to the cool stuff… SSH&lt;&#x2F;h1&gt;
+&lt;p&gt;..and so, at last, on to the cool stuff.&lt;&#x2F;p&gt;
+&lt;p&gt;Given you can now cryptographically trust DNS, you can do something interesting. Rather than need to verify all the SSH fingerprints, you can store them in DNS and have your SSH client automagically verify that all is well.&lt;&#x2F;p&gt;
+&lt;p&gt;I followed a set of instructions I found at &lt;a href=&quot;http:&#x2F;&#x2F;blog.exanames.com&#x2F;2009&#x2F;06&#x2F;one-more-thing-to-do-with-dnssec-ssh.html&quot;&gt;http:&#x2F;&#x2F;blog.exanames.com&#x2F;2009&#x2F;06&#x2F;one-more-thing-to-do-with-dnssec-ssh.html&lt;&#x2F;a&gt;, and as before, here’s a summary.&lt;&#x2F;p&gt;
+&lt;p&gt;Run the following two comands on each host you’d like to generate fingerprints for:&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;ssh-keygen -r `hostname`. -f &#x2F;etc&#x2F;ssh&#x2F;ssh_host_rsa_key
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;ssh-keygen -r `hostname`. -f &#x2F;etc&#x2F;ssh&#x2F;ssh_host_dsa_key
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;This will generate two &lt;kbd&gt;SSHFP&lt;&#x2F;kbd&gt; records that you will need to include in the zonefile, then you can re-sign and re-publish the zone.&lt;&#x2F;p&gt;
+&lt;p&gt;In my case, the records generated were for .co.uk variants of the hostname, but I found no problems changing them to .org&lt;&#x2F;p&gt;
+&lt;p&gt;You’ll then need to persuade SSH to perform verification using DNS. I did this by adding the relevant option to &lt;code&gt;&#x2F;etc&#x2F;ssh&#x2F;ssh_config&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;VerifyHostKeyDNS yes
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;There, you’re done. You should now be able to ssh to the host(s) concerned without needing to manually verify the fingerprints.&lt;&#x2F;p&gt;
+</description>
+      </item>
+      <item>
+          <title>tcp&#x2F;53 isn&#x27;t just for AXFR</title>
+          <pubDate>Thu, 18 Mar 2010 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://karldyson.github.io/karld-blog-website/posts/tcp-53-isnt-just-for-axfr/</link>
+          <guid>https://karldyson.github.io/karld-blog-website/posts/tcp-53-isnt-just-for-axfr/</guid>
+          <description xml:base="https://karldyson.github.io/karld-blog-website/posts/tcp-53-isnt-just-for-axfr/">&lt;p&gt;The internet has a defined set of rules known as RFCs. They work together to make sure that all participants of the internet community are working in the same way, and that the things they do as part of that community will work with, and interact correctly with the things that others do.&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;a href=&quot;https:&#x2F;&#x2F;datatracker.ietf.org&#x2F;doc&#x2F;html&#x2F;rfc1035#section-4.2.1&quot;&gt;RFC1035 section 4.2.1&lt;&#x2F;a&gt; (UDP Transport) states:&lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Messages carried by UDP are restricted to 512 bytes (not counting the IP or UDP headers). Longer messages are truncated and the TC bit is set in the header.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;You then fall back to TCP and repeat your query to get the full response.&lt;&#x2F;p&gt;
+&lt;p&gt;Yes, AXFR queries are TCP, but TCP isn’t exclusively AXFR!&lt;&#x2F;p&gt;
+&lt;p&gt;Assuming that, because you won’t be doing any transfers and therefore don’t need to allow &lt;mark&gt;tcp&#x2F;53&lt;&#x2F;mark&gt;, is wrong, and will invariably involve you having issues with some service or other, due to not getting the correct information from DNS.&lt;&#x2F;p&gt;
+&lt;p&gt;I’ll give you an example:&lt;&#x2F;p&gt;
+&lt;p&gt;You use a service that, for whatever reason, decides that as a basic form of load balancing, to use multiple A records for the ‘name’ you’ve queried. So, you ask for &lt;code&gt;www.example.com&lt;&#x2F;code&gt; and, rather than give you back a single A record, they give you one for each of their servers. This could easily become longer than 512 bytes, the answer will be truncated, and you &lt;em&gt;should&lt;&#x2F;em&gt; repeat your request using TCP. Your resolver knows this, and will automatically do it.&lt;&#x2F;p&gt;
+&lt;p&gt;If you’ve blocked &lt;mark&gt;tcp&#x2F;53&lt;&#x2F;mark&gt; on your firewall, it’ll fail. You’ll sit, staring at your computer, thinking that &lt;code&gt;www.example.com&lt;&#x2F;code&gt; has fallen over, failed in some way, when they have not. It’s not their fault that you’ve not followed the rules.&lt;&#x2F;p&gt;
+&lt;p&gt;It’s not just website related records either, email related records (MX, or the TXT for DKIM, DomainKeys or SPF) are other great examples of this…. block &lt;mark&gt;tcp&#x2F;53&lt;&#x2F;mark&gt; from your mail server, and you could quite easily find yourself not receiving email from some senders.&lt;&#x2F;p&gt;
+&lt;p&gt;[edited later to add the following]&lt;&#x2F;p&gt;
+&lt;p&gt;Further reading (thanks to Duncan for the pointer) of &lt;a href=&quot;https:&#x2F;&#x2F;datatracker.ietf.org&#x2F;doc&#x2F;html&#x2F;rfc1123#section-6.1.3.2&quot;&gt;RFC1123 section 6.1.3.2&lt;&#x2F;a&gt; (Transport Protocols) states:&lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;DNS resolvers and recursive servers MUST support UDP, and
+SHOULD support TCP, for sending (non-zone-transfer) queries.
+Specifically, a DNS resolver or server that is sending a
+non-zone-transfer query MUST send a UDP query first. If the
+Answer section of the response is truncated and if the
+requester supports TCP, it SHOULD try the query again using
+TCP.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+&lt;p&gt;I guess I’m a little disappointed to see “SHOULD” instead of “MUST”, but given the document was written in 1989, I think today, it should be read as “SHOULD, if you want it to work”. It does go on to say:&lt;&#x2F;p&gt;
+&lt;blockquote&gt;
+&lt;p&gt;Whether it is possible to use a truncated answer depends on the application. A mailer must not use a truncated MX response, since this could lead to mail loops.&lt;&#x2F;p&gt;
+&lt;&#x2F;blockquote&gt;
+</description>
+      </item>
+    </channel>
+</rss>

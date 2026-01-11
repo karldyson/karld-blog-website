@@ -1,0 +1,145 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss xmlns:atom="http://www.w3.org/2005/Atom" version="2.0">
+    <channel>
+      <title>Karl&#x27;s Little World - privacy-extensions</title>
+      <link>https://karldyson.github.io/karld-blog-website/</link>
+      <description>...just stuff I thought I should write down and that might be useful to others...</description>
+      <generator>Zola</generator>
+      <language>en</language>
+      <atom:link href="https://karldyson.github.io/karld-blog-website/tags/privacy-extensions/rss.xml" rel="self" type="application/rss+xml"/>
+      <lastBuildDate>Mon, 28 Apr 2025 00:00:00 +0000</lastBuildDate>
+      <item>
+          <title>IPv6 Privacy Extensions on Linux</title>
+          <pubDate>Mon, 28 Apr 2025 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://karldyson.github.io/karld-blog-website/posts/ipv6-privacy-extensions-linux/</link>
+          <guid>https://karldyson.github.io/karld-blog-website/posts/ipv6-privacy-extensions-linux/</guid>
+          <description xml:base="https://karldyson.github.io/karld-blog-website/posts/ipv6-privacy-extensions-linux/">&lt;h1 id=&quot;introduction&quot;&gt;Introduction&lt;&#x2F;h1&gt;
+&lt;p&gt;This is definitely one of the blog posts written to remind me how to do something.&lt;&#x2F;p&gt;
+&lt;p&gt;I’m sure I knew this, but returning to it on a new box caused me frustration that Googling did not help with. Maybe my google-fu is broken?&lt;&#x2F;p&gt;
+&lt;p&gt;It was only after quite a bit of googling and reading things that I spotted something in a comment that reminded me of the thing I was missing.&lt;&#x2F;p&gt;
+&lt;p&gt;So, I’m writing this so that it will remind me in future, and may help others.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;scenario&quot;&gt;Scenario&lt;&#x2F;h1&gt;
+&lt;p&gt;I had built a new Raspberry Pi 5 as a pi-hole server.&lt;&#x2F;p&gt;
+&lt;p&gt;Of course, in order to ssh to it and browse to the admin UI, it has fixed IP addresses.&lt;&#x2F;p&gt;
+&lt;p&gt;Actual DNS service is done by advertising service IP(s) into the router’s routing table so I can do some ECMP and resilience.&lt;&#x2F;p&gt;
+&lt;p&gt;I wanted it to recurse to the internet from privacy extensions IPs so that the recursive source IPs change over time.&lt;&#x2F;p&gt;
+&lt;p&gt;I knew I needed to stick a &lt;code&gt;2&lt;&#x2F;code&gt; in &lt;code&gt;&#x2F;proc&#x2F;sys&#x2F;net&#x2F;ipv6&#x2F;conf&#x2F;eth0&#x2F;use_tempaddr&lt;&#x2F;code&gt; and that things worked best if you also stick &lt;code&gt;1&lt;&#x2F;code&gt; in &lt;code&gt;&#x2F;proc&#x2F;sys&#x2F;net&#x2F;ipv6&#x2F;conf&#x2F;eth0&#x2F;accept_ra&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;But, nothing. No dynamic IPv6 addresses.&lt;&#x2F;p&gt;
+&lt;p&gt;Bother.&lt;&#x2F;p&gt;
+&lt;p&gt;I knew there was something else I was pretty sure there’s a third file I need to do something with, but could I remember which one it was?&lt;&#x2F;p&gt;
+&lt;p&gt;Nope.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;solution&quot;&gt;Solution&lt;&#x2F;h1&gt;
+&lt;p&gt;So, I’ll cut to the chase.&lt;&#x2F;p&gt;
+&lt;p&gt;For automatic IP configuration, there also needs to be a &lt;code&gt;1&lt;&#x2F;code&gt; in &lt;code&gt;&#x2F;proc&#x2F;sys&#x2F;net&#x2F;ipv6&#x2F;conf&#x2F;eth0&#x2F;autoconf&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;configuration&quot;&gt;Configuration&lt;&#x2F;h1&gt;
+&lt;p&gt;This is what I have done to fix this such that it’s reboot and upgrade safe. By all means leave me a comment below if I’ve missed something obvious here!&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;sysctl&lt;&#x2F;code&gt; can be persuaded to make these changes as follows:&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;$ cat &#x2F;etc&#x2F;sysctl.d&#x2F;99-tempaddr.conf
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;# accept router-advertisements
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;net.ipv6.conf.all.accept_ra=1
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;net.ipv6.conf.default.accept_ra=1
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;# use temporary addresses (privacy extensions)
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;net.ipv6.conf.all.use_tempaddr=2
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;net.ipv6.conf.default.use_tempaddr=2
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;# auto configure addresses
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;net.ipv6.conf.all.autoconf=1
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;net.ipv6.conf.default.autoconf=1
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;I don’t use NetworkManager for my &lt;code&gt;eth0&lt;&#x2F;code&gt; IP addresses, as I’m more familiar with &lt;code&gt;&#x2F;etc&#x2F;network&#x2F;interfaces&lt;&#x2F;code&gt; so this is my static config and a poke to make sure that &lt;code&gt;eth0&lt;&#x2F;code&gt; picks up the settings too.&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;$ cat &#x2F;etc&#x2F;network&#x2F;interfaces.d&#x2F;ethernet
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;auto eth0
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;allow-hotplug eth0
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;iface eth0 inet static
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	address 10.1.1.53
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	netmask 255.255.255.0
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	gateway 10.1.1.1
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;iface eth0 inet6 static
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	address 2001:db8::53
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	netmask 64
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;	gateway 2001:db8::1
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;        post-up &#x2F;usr&#x2F;sbin&#x2F;sysctl net.ipv6.conf.eth0.accept_ra=1
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;        post-up &#x2F;usr&#x2F;sbin&#x2F;sysctl net.ipv6.conf.eth0.autoconf=1
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;        post-up &#x2F;usr&#x2F;sbin&#x2F;sysctl net.ipv6.conf.eth0.use_tempaddr=2
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h1 id=&quot;fixed&quot;&gt;Fixed!&lt;&#x2F;h1&gt;
+&lt;p&gt;…and this is what the output looks like now that that is working…&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;$ ip add sh eth0
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;2: eth0: &amp;lt;BROADCAST,MULTICAST,UP,LOWER_UP&amp;gt; mtu 1500 qdisc pfifo_fast state UP group default qlen 1000
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    link&#x2F;ether 2c:cf:67:8a:03:50 brd ff:ff:ff:ff:ff:ff
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    inet 10.1.1.53&#x2F;24 brd 10.1.1.255 scope global eth0
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;       valid_lft forever preferred_lft forever
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    inet6 2001:db8::a863:8e:293f:1ec7&#x2F;64 scope global temporary dynamic
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;       valid_lft 525174sec preferred_lft 6706sec
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    inet6 2001:db8::2ecf:67ff:fe8a:350&#x2F;64 scope global dynamic mngtmpaddr
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;       valid_lft 2591996sec preferred_lft 604796sec
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    inet6 2001:db8::53&#x2F;64 scope global
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;       valid_lft forever preferred_lft forever
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;    inet6 fe80::2ecf:67ff:fe8a:350&#x2F;64 scope link
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;       valid_lft forever preferred_lft forever
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;p&gt;..and remote things on the internet see the correct source for my outbound connections…&lt;&#x2F;p&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;$ dig i.p.c.je txt @i.p.c.je +short
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;&amp;quot;query received from source IP: 2001:db8::a863:8e:293f:1ec7&amp;quot;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;&amp;quot;query received from source port: 47948&amp;quot;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;&amp;quot;query received over: udp&amp;quot;
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;&amp;quot;edns size: 1232&amp;quot;
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;pre class=&quot;z-code&quot;&gt;&lt;code&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;$ curl -6 c.je&#x2F;ip
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;Your IP is 2001:db8::a863:8e:293f:1ec7
+&lt;&#x2F;span&gt;&lt;span class=&quot;z-text z-plain&quot;&gt;You&amp;#39;re using curl&#x2F;7.88.1
+&lt;&#x2F;span&gt;&lt;&#x2F;code&gt;&lt;&#x2F;pre&gt;
+&lt;h1 id=&quot;technicalities&quot;&gt;Technicalities&lt;&#x2F;h1&gt;
+&lt;h2 id=&quot;use-tempaddr&quot;&gt;use_tempaddr&lt;&#x2F;h2&gt;
+&lt;p&gt;Values in this file have the following meanings:&lt;&#x2F;p&gt;
+&lt;ul&gt;
+&lt;li&gt;&lt;code&gt;&amp;lt;= 0&lt;&#x2F;code&gt; : Privacy Extensions is disabled&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;== 1&lt;&#x2F;code&gt; : Privacy Extensions is enabled, but public addresses are preferred over temporary addresses&lt;&#x2F;li&gt;
+&lt;li&gt;&lt;code&gt;&amp;gt; 1&lt;&#x2F;code&gt; : Privacy Extensions is enabled, but temporary addresses are preferred over public addresses&lt;&#x2F;li&gt;
+&lt;&#x2F;ul&gt;
+&lt;p&gt;Note that in some very brief and not very scientific testing, if autoconf is enabled and use_tempaddr is set to 1, the addresses that seem to be preferred are the autoconf addresses even if you have a static configured. I don’t think this surprises me, but worth noting.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;accept-ra&quot;&gt;accept_ra&lt;&#x2F;h2&gt;
+&lt;p&gt;Simply put, &lt;code&gt;0&lt;&#x2F;code&gt; to disable, &lt;code&gt;1&lt;&#x2F;code&gt; to enable the acceptance of router advertisements.&lt;&#x2F;p&gt;
+&lt;p&gt;Note that if you disable this, you will need to specify the gateway statically if you have not already.&lt;&#x2F;p&gt;
+&lt;p&gt;If this is disabled but &lt;code&gt;use_tempaddr&lt;&#x2F;code&gt; is non zero, temporary addresses can still be created but just not using prefix information from the router advertisements.&lt;&#x2F;p&gt;
+&lt;h2 id=&quot;autoconf&quot;&gt;autoconf&lt;&#x2F;h2&gt;
+&lt;p&gt;As above; &lt;code&gt;0&lt;&#x2F;code&gt; to disable, &lt;code&gt;1&lt;&#x2F;code&gt; to enable the automatic configuration of IP addresses.&lt;&#x2F;p&gt;
+&lt;p&gt;If &lt;code&gt;accept_ra&lt;&#x2F;code&gt; is set to &lt;code&gt;1&lt;&#x2F;code&gt; and this is set to &lt;code&gt;0&lt;&#x2F;code&gt;, router advertisements will be used for the gateway but not for IP address configuration locally.&lt;&#x2F;p&gt;
+&lt;p&gt;If this is enabled and &lt;code&gt;use_tempaddr&lt;&#x2F;code&gt; is not, stateless (SLAAC) addresses will be added to the interface but no privacy extensions addresses.&lt;&#x2F;p&gt;
+</description>
+      </item>
+      <item>
+          <title>IPv6 Privacy Extensions</title>
+          <pubDate>Thu, 07 Apr 2011 00:00:00 +0000</pubDate>
+          <author>Unknown</author>
+          <link>https://karldyson.github.io/karld-blog-website/posts/ipv6-privacy-extensions/</link>
+          <guid>https://karldyson.github.io/karld-blog-website/posts/ipv6-privacy-extensions/</guid>
+          <description xml:base="https://karldyson.github.io/karld-blog-website/posts/ipv6-privacy-extensions/">&lt;h1 id=&quot;introduction&quot;&gt;Introduction&lt;&#x2F;h1&gt;
+&lt;p&gt;If you’ve switched on IPv6, whether via a tunnel, or natively, your machine is likely to have stepped out from behind NAT and now has a globally routable address.&lt;&#x2F;p&gt;
+&lt;p&gt;Whilst NAT is not security, and inbound connections to your machine are likely behind a firewall, that doesn’t change one thing: in many cases your IPv6 address is made up automatically by auto-configuration.&lt;&#x2F;p&gt;
+&lt;p&gt;It’s made up of two parts, the last 64 bits are put together partly from the MAC address of your network interface, and the rest comes from the network prefix.&lt;&#x2F;p&gt;
+&lt;p&gt;This makes your machine globally identifiable, and therefore, trackable by third parties, such as web sites.&lt;&#x2F;p&gt;
+&lt;p&gt;To this end, &lt;a href=&quot;https:&#x2F;&#x2F;datatracker.ietf.org&#x2F;doc&#x2F;html&#x2F;rfc3041&quot;&gt;RFC3041&lt;&#x2F;a&gt;, superseded by &lt;a href=&quot;https:&#x2F;&#x2F;datatracker.ietf.org&#x2F;doc&#x2F;html&#x2F;rfc4941&quot;&gt;RFC4941&lt;&#x2F;a&gt; defines privacy extensions.&lt;&#x2F;p&gt;
+&lt;p&gt;When enabled, your machine still has the auto-configuration address, but now also has a randomised additional address that changes periodically and is used for outbound connections.&lt;&#x2F;p&gt;
+&lt;p&gt;On many linux distributions this is disabled by default. Windows XP is the same. Windows Vista enables it by default, and I believe newer versions of Windows also enable it by default.&lt;&#x2F;p&gt;
+&lt;p&gt;I don’t have access to any Windows Server installations with IPv6, so I’m unsure if the server editions do this too.&lt;&#x2F;p&gt;
+&lt;p&gt;I mention servers, as you probably don’t want this on a server. Imagine, for example, a mail server making an outbound connection from a random and short lived IP address. It’s unlikely to have a valid PTR, for example, and many, not all I grant you, but many MTAs will not like that.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;enabling-it-on-linux&quot;&gt;Enabling it on Linux&lt;&#x2F;h1&gt;
+&lt;p&gt;Enabling it on linux distributions is quite straight forward:&lt;&#x2F;p&gt;
+&lt;p&gt;as root:&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;echo 2 &amp;gt; &#x2F;proc&#x2F;sys&#x2F;net&#x2F;ipv6&#x2F;conf&#x2F;all&#x2F;use_tempaddr&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;You can automate this at boot in the normal way; edit &lt;code&gt;&#x2F;etc&#x2F;sysctl.conf&lt;&#x2F;code&gt; and add the line:&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;net.ipv6.conf.all.use_tempaddr=2&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;You can swap all for a specific IPv6 enabled interface, such as &lt;code&gt;eth0&lt;&#x2F;code&gt; if you require.&lt;&#x2F;p&gt;
+&lt;h1 id=&quot;enabling-it-on-os-x&quot;&gt;Enabling it on OS X&lt;&#x2F;h1&gt;
+&lt;p&gt;OS X has it disabled by default. I believe you can add to, or create &lt;code&gt;&#x2F;etc&#x2F;sysctl.conf&lt;&#x2F;code&gt; with the following:&lt;&#x2F;p&gt;
+&lt;p&gt;&lt;code&gt;net.ipv6.conf.all.use_tempaddr=1&lt;&#x2F;code&gt;&lt;&#x2F;p&gt;
+&lt;p&gt;Don’t quote me on that last one; I’ve not tested it!&lt;&#x2F;p&gt;
+&lt;p&gt;[edit 21&#x2F;Mar&#x2F;2017]: MacOS Sierra seems to have it enabled by default…&lt;&#x2F;p&gt;
+</description>
+      </item>
+    </channel>
+</rss>
