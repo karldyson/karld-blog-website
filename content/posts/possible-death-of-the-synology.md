@@ -4,6 +4,8 @@ description = "...I think there's a strong chance that my Synology is dead..."
 date = 2026-01-11
 [extra]
 toc = false
+[extra.comments]
+id = "115876687814203840"
 [taxonomies]
 tags = ["synology"]
 categories = ["Technical"]
